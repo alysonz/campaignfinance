@@ -1,4 +1,32 @@
 <html>
-<body> What's up, Evan?
+<body>
+<form>
+Primary Entity Type:
+<form action="">
+<select name="entityType">
+<option value="Any" selected>Any</option>
+<option value="individual">Individual</option>
+<option value="candidate">Candidate</option>
+<option value="support/oppose">Support/Oppose</option>
+<option value="politicalParty">Political Party</option>
+</select>
+</form>
+Transaction Type:
+<form action="">
+<select name="transactionType">
+<option value="all" selected>All</option>
+<option value="income">Income</option>
+<option value="expense">Expense</option>
+</select>
+</form>
+Transaction Category:
+<form>
+<input type="checkbox" name="transactionCategoryName" value="advertising"> Advertising
+<input type="checkbox" name="transactionCategoryName" value="mailings">Mailings
+<input type="checkbox" name="transactionCategoryName" value="tv">TV
+<input type="checkbox" name="transactionCategoryName" value="radio">Radio
+<input type="checkbox" name="transactionCategoryName" value="newspapers">Newspapers
+<input type="checkbox" name="transactionCategoryName" value="postcards">Postcards
+</form>
 </body>
 </html>
