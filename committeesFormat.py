@@ -15,7 +15,7 @@ unixCycleBeginDate = 1
 unixCycleEndDate = 1
 for line in committees:
 #split committee data into columns
-	items = line.split("|")
+	items = line.split("|")	
 	#the 20th column is organization date
 	organizationDate = items[19]
 	#split date information MM/DD/YYYY HH:MM:SS at the space
@@ -39,11 +39,11 @@ for line in committees:
 	#select null and atypical placeholder values
 	else:
 		#normalize all to null
-		items[19] = ""
+		items[19] = "0"
 		#insert empty fields for year, month, day values
-		items.insert(20, "")
-		items.insert(21, "")
-		items.insert(22, "")
+		items.insert(20, "0")
+		items.insert(21, "0")
+		items.insert(22, "0")
 	#the now-24th item is termination date. repeat process.
 	terminationDate	= items[23]
 	terminationDate = terminationDate.split(" ")
@@ -57,10 +57,10 @@ for line in committees:
 		items.insert(25, terminationDate[0])
 		items.insert(26, terminationDate[1])
 	else:
-		items[23] = ""
-		items.insert(24, "")
-		items.insert(25, "")
-		items.insert(26, "")
+		items[23] = "0"
+		items.insert(24, "0")
+		items.insert(25, "0")
+		items.insert(26, "0")
 	#the now-37th item is cycle begin date. repeat process.
 	cycleBeginDate = items[36]
 	cycleBeginDate = cycleBeginDate.split(" ")
@@ -74,10 +74,10 @@ for line in committees:
 		items.insert(38, cycleBeginDate[0])
 		items.insert(39, cycleBeginDate[1])
 	else:
-		items[36] = ""
-		items.insert(37, "")
-		items.insert(38, "")
-		items.insert(39, "")
+		items[36] = "0"
+		items.insert(37, "0")
+		items.insert(38, "0")
+		items.insert(39, "0")
 	#the now 41st item is cycle end date. repeat proces.
 	cycleEndDate = items[40]
 	cycleEndDate = cycleEndDate.split(" ")
@@ -91,10 +91,36 @@ for line in committees:
 		items.insert(42, cycleEndDate[0])
 		items.insert(43, cycleEndDate[1])
 	else:
-		items[40] = ""
-		items.insert(41, "")
-		items.insert(42, "")
-		items.insert(43, "")
+		items[40] = "0"
+		items.insert(41, "0")
+		items.insert(42, "0")
+		items.insert(43, "0")
+	#normalize chairpersonNameID
+	if len(items[2]) < 1:
+		items[2] = "0"
+	#normalize treasurerNameID
+	if len(items[3]) < 1:
+		items[3] = "0"
+	#normalize candidateNameID
+	if len(items[4]) < 1:
+		items[4] = "0"
+	#normalize designeeNameID
+	if len(items[5]) < 1:
+		items[5] = "0"
+	#normalize sponsorNameID
+	if len(items[6]) < 1:
+		items[6] = "0"
+	#normalize ballotMeasureID
+	if len(items[7]) < 1:
+		items[7] = "0"
+	#normalize measureNumber
+	if len(items[9]) < 1:
+		items[9] = "0"
+	if items[9] == "N/A":
+		items[9] = "0"
+	#normalize cycleName
+	if len(items[35]) < 1:
+		items[35] = "0"
 	line = "|".join(items)
 	line = line.rstrip()	
 	committeesFormat.write("%s\n" %(line))

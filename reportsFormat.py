@@ -10,6 +10,7 @@ reportPeriodEndDate = 1
 filingPeriodBeginDate = 1
 filingPeriodEndDate = 1
 filingDate = 1
+cycleName = 1
 unixReportPeriodBeginDate = 1
 unixReportPeriodEndDate = 1
 unixFilingPeriodBeginDate = 1
@@ -41,11 +42,11 @@ for line in reports:
 	#select null and atypical placeholder values
 	else:
 		#normalize all to null
-		items[5] = ""
+		items[5] = "0"
 		#insert empty fields for year, month, day values
-		items.insert(6, "")
-		items.insert(7, "")
-		items.insert(8, "")
+		items.insert(6, "0")
+		items.insert(7, "0")
+		items.insert(8, "0")
 	#the 10th item is report period end date. repeat process.
 	reportPeriodEndDate	= items[9]
 	reportPeriodEndDate = reportPeriodEndDate.split(" ")
@@ -59,10 +60,10 @@ for line in reports:
 		items.insert(11, reportPeriodEndDate[0])
 		items.insert(12, reportPeriodEndDate[1])
 	else:
-		items[9] = ""
-		items.insert(10, "")
-		items.insert(11, "")
-		items.insert(12, "")
+		items[9] = "0"
+		items.insert(10, "0")
+		items.insert(11, "0")
+		items.insert(12, "0")
 	#the 14th item is filing period begin date. repeat process.
 	filingPeriodBeginDate = items[13]
 	filingPeriodBeginDate = filingPeriodBeginDate.split(" ")
@@ -76,10 +77,10 @@ for line in reports:
 		items.insert(15, filingPeriodBeginDate[0])
 		items.insert(16, filingPeriodBeginDate[1])
 	else:
-		items[13] = ""
-		items.insert(14, "")
-		items.insert(15, "")
-		items.insert(16, "")
+		items[13] = "0"
+		items.insert(14, "0")
+		items.insert(15, "0")
+		items.insert(16, "0")
 	#the 18th item is filing period end date. repeat proces.
 	filingPeriodEndDate = items[17]
 	filingPeriodEndDate = filingPeriodEndDate.split(" ")
@@ -93,10 +94,10 @@ for line in reports:
 		items.insert(19, filingPeriodEndDate[0])
 		items.insert(20, filingPeriodEndDate[1])
 	else:
-		items[17] = ""
-		items.insert(18, "")
-		items.insert(19, "")
-		items.insert(20, "")
+		items[17] = "0"
+		items.insert(18, "0")
+		items.insert(19, "0")
+		items.insert(20, "0")
 	#the 23nd item is filing date. repeat process.
 	filingDate = items[22]
 	filingDate = filingDate.split(" ")
@@ -110,10 +111,38 @@ for line in reports:
 		items.insert(24, filingDate[0])
 		items.insert(25, filingDate[1])
 	else:
-		items[22] = ""
-		items.insert(23, "")
-		items.insert(24, "")
-		items.insert(25, "")
+		items[22] = "0"
+		items.insert(23, "0")
+		items.insert(24, "0")
+		items.insert(25, "0")
+	#convert cycleID to actual cycle year
+	cycleName = int(items[2])
+	if cycleName == 1:
+		cycleName = 1994
+	elif cycleName == 2:
+		cycleName = 1996
+	elif cycleName == 3:
+		cycleName = 1998
+	elif cycleName == 4:
+		cycleName = 2000
+	elif cycleName == 5:
+		cycleName = 2002
+	elif cycleName == 6:
+		cycleName = 2004
+	elif cycleName == 7:
+		cycleName = 2006
+	elif cycleName == 8:
+		cycleName = 2008
+	elif cycleName == 25:
+		cycleName = 2010
+	elif cycleName == 26:
+		cycleName = 2012
+	elif cycleName == 27:
+		cycleName = 2014
+	items[2] = str(cycleName)
+	#normalize originalReportID
+	if len(items[21]) < 1:
+		items[21] = "0"
 	line = "|".join(items)
 	line = line.rstrip()	
 	reportsFormat.write("%s\n" %(line))

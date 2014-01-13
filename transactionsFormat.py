@@ -4,11 +4,13 @@ import calendar
 import re
 transactions = open('transactionsConsolidated.txt', 'r')
 transactionsFormat = open('transactionsFormat.txt','w')
-transactions = transactions.readlines()
 transactionDate = 1
 unixTransactionDate = 1
 transactionAmount = 1
-for line in committees:
+line = transactions.readline()
+index = 0
+while line:
+	index+=1
 #split committee data into columns
 	items = line.split("|")
 	#the 6th column is transaction date
@@ -49,11 +51,21 @@ for line in committees:
 	if len(transactionAmount) < 4:
 		#normalize null or atypical place holder values with 0 amount string
 		transactionAmount = "0.00"
+	if re.search("\)", transactionAmount):
+		transactionAmount = re.sub("\)", "", transactionAmount)
+		transactionAmount = "-" + transactionAmount
 	#replace old transaction amount with formatted amount
 	items[9] = transactionAmount
+	if len(items[12]) < 1:
+		items[12] = "0"
+	memo = items[10]
 	#join items list with |
 	line = "|".join(items)
 	#strip whatever line terminating symbol exists
 	line = line.rstrip()	
 	#write lines terminating with \n 
 	transactionsFormat.write("%s\n" %(line))
+	line = transactions.readline()
+	if index%1000 == 0:
+		transactions.flush()
+		print index
