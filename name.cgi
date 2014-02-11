@@ -7,6 +7,7 @@ import re
 from gettuple import getlist
 from gettuple import gettuple
 from parms import *
+import json
 #connect to database
 db = MySQLdb.connect(user=db_user, passwd=db_pass, db=db_db)
 cursor = db.cursor()
@@ -154,13 +155,10 @@ print """
 """
 if entityType <> "blank":
 	if len(report) > 0:
-		for line in report:
-			for item in line:
-				print item
-			print "</br>"
+		print json.dumps(report)
 else:
 	print "Message 9: Please select search type."
-print "<p><a href='http://wildfire.codercollective.org/campaignfinance/iframe.html'>Go Back</a></p>"
+print "<p><a href='http://wildfire.codercollective.org/testcampaignfinance/iframe.html'>Go Back</a></p>"
 print """
 </body>
 </html>

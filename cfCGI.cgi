@@ -45,7 +45,7 @@ print """
 """
 #print contents of report
 if entityOneType <> "blank":
-	print "<p><a href='http://wildfire.codercollective.org/campaignfinance/download.cgi?entityOneType=%s&transactionType=%s&cycleName=%s&startDate=%s&endDate=%s&committeeNameID=%s&entityOneFirstName=%s&entityOneLastName=%s'>Download data</a></p>"%(entityOneType, transactionType, cycleName, startDate, endDate, committeeNameID, entityOneFirstName, entityOneLastName)
+	print "<p><a href='http://wildfire.codercollective.org/testcampaignfinance/download.cgi?entityOneType=%s&transactionType=%s&cycleName=%s&startDate=%s&endDate=%s&committeeNameID=%s&entityOneFirstName=%s&entityOneLastName=%s'>Download data</a></p>"%(entityOneType, transactionType, cycleName, startDate, endDate, committeeNameID, entityOneFirstName, entityOneLastName)
 	print "<table border='1' width='3450'>"
 	if len(report) > 0:
 		for line in report:
