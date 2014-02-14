@@ -13,9 +13,9 @@ db = MySQLdb.connect(user=db_user, passwd=db_pass, db=db_db)
 cursor = db.cursor()
 #get form variables
 form = cgi.FieldStorage()
-entityType = form.getvalue('entityType' ,False)
-if entityType:
-	entityType = cgi.escape(entityType)
+searchType = form.getvalue('searchType' ,False)
+if searchType:
+	searchType = cgi.escape(searchType)
 firstName = form.getvalue('firstName', False)
 if firstName:
 	firstName= cgi.escape(firstName)
@@ -28,6 +28,9 @@ if race:
 cycleName = form.getvalue('cycleName' ,False)
 if cycleName:
 	cycleName = cgi.escape(cycleName)
+committeeForm = form.getvalue('committee', False)
+if committeeForm:
+	committeeForm = cgi.escape(committeeForm)
 #committee query variables
 nameResult = "you misspelled something somewhere"
 committee = "you misspelled something somewhere"
@@ -38,7 +41,7 @@ possibleName = "you misspelled something somewhere"
 report = []
 committeesByRace = "you misspelled something somewhere"
 #committee by race
-if entityType == "race":
+if searchType == "race":
 	if race <> "blank":
 		if cycleName <> "blank":
 			cursor.execute("select * from committees where officeName = %s and cycleName = %s;",(race, cycleName))
@@ -63,9 +66,9 @@ if entityType == "race":
 	else:
 		report = [["Message 14: Please select a race."]]
 #committee query
-if entityType == "committee":
-	if lastName:
-		cursor.execute("select nameID from names where lastName like %s;",("%%%s%%"%(lastName)))
+if searchType == "committee":
+	if committeeForm:
+		cursor.execute("select nameID from names where lastName like %s;",("%%%s%%"%(committeeForm)))
 		nameResult = gettuple(cursor.fetchall())
 		if len(nameResult) > 0:
 			for line in nameResult:
@@ -89,7 +92,7 @@ if entityType == "committee":
 		report = [["Message 15: Minimum requirement not met. Please supply a full or partial committee name in last name field."]]
 #end committee query
 #begin candidate query
-if entityType == "candidate":
+if searchType == "candidate":
 	if (firstName) or (lastName):
 		if firstName == False:
 			firstName = ""
@@ -153,12 +156,8 @@ print """
 <html>
 <body>
 """
-if entityType <> "blank":
-	if len(report) > 0:
-		print json.dumps(report)
-else:
-	print "Message 9: Please select search type."
-print "<p><a href='http://wildfire.codercollective.org/testcampaignfinance/iframe.html'>Go Back</a></p>"
+if len(report) > 0:
+	print json.dumps(report)
 print """
 </body>
 </html>
