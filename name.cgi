@@ -41,6 +41,8 @@ possibleName = "you misspelled something somewhere"
 report = []
 committeesByRace = "you misspelled something somewhere"
 #committee by race
+print "content-type:text/html"
+print
 if searchType == "race":
 	if race <> "blank":
 		if cycleName <> "blank":
@@ -52,7 +54,7 @@ if searchType == "race":
 					cursor.execute("select nameID, lastName, firstName, entityTypeName from names where nameID = %s;",(line[1]))
 					committeeName = gettuple(cursor.fetchall())
 					committeeName.append(line[35])
-					report.append(committeeName)	
+					report.append(committeeName)
 			elif len(committeesByRace) == 1:
 				committeesByRace = gettuple(committeesByRace)
 				cursor.execute("select nameID, lastName, firstName, entityTypeName from names where nameID = %s;",(committeesByRace[1]))
@@ -65,7 +67,8 @@ if searchType == "race":
 			report = [["Message 11: Please select cycle."]]
 	else:
 		report = [["Message 14: Please select a race."]]
-#committee query
+	if len(report) > 0:
+		print json.dumps(report)
 if searchType == "committee":
 	if committeeForm:
 		cursor.execute("select nameID from names where lastName like %s;",("%%%s%%"%(committeeForm)))
@@ -90,6 +93,8 @@ if searchType == "committee":
 			report = [["Message 5: Committee not found."]]
 	else:
 		report = [["Message 15: Minimum requirement not met. Please supply a full or partial committee name in last name field."]]
+	if len(report) > 0:
+		print json.dumps(report)
 #end committee query
 #begin candidate query
 if searchType == "candidate":
@@ -136,7 +141,7 @@ if searchType == "candidate":
 				#add the committee's cycle information to that list
 				possibleName.append(candidate[35])
 				possibleName.append(candidate[3])
-				possibleName.append(candidate[1])
+				possibleName.insert(0,candidate[1])
 				#append that candidate's information to the final report
 				report.append(possibleName)
 			#if the name was not a candidate, inform the user
@@ -147,18 +152,7 @@ if searchType == "candidate":
 			report = [["Message 8: Candidate not found."]]		
 	else:
 		report = [["Message 14: Minimum requirements not met. Please supply at least a partial first or last name."]]
+	if report > 0:
+		print json.dumps(report)
 db.commit()
 cursor.close()
-#begin web content
-print "content-type:text/html"
-print
-print """
-<html>
-<body>
-"""
-if len(report) > 0:
-	print json.dumps(report)
-print """
-</body>
-</html>
-"""

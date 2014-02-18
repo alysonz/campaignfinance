@@ -5,3 +5,6 @@ float: left;
 #entityHead {
 background-color: #CCCCCC;
 }
+#results {
+float: right;
+}
