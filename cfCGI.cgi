@@ -42,6 +42,5 @@ print "content-type:text/html"
 print
 #print contents of report
 if entityOneType <> "blank":
-#	print "<p><a href='http://wildfire.codercollective.org/testcampaignfinance/download.cgi?entityOneType=%s&transactionType=%s&cycleName=%s&startDate=%s&endDate=%s&committeeNameID=%s&entityOneFirstName=%s&entityOneLastName=%s'>Download data</a></p>"%(entityOneType, transactionType, cycleName, startDate, endDate, committeeNameID, entityOneFirstName, entityOneLastName)
 	if len(report) > 0:
 		print json.dumps(report)

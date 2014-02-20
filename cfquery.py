@@ -209,6 +209,7 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 			for line in report:
 				line[19] = datetime.fromtimestamp(line[19]).strftime('%m-%d-%Y')
 		report.insert(0, headers)
+		report.insert(0, [entityOneFirstName, entityOneLastName])
 	elif entityOneType <> "committee":
 		report.append(["Message 18: Please fill in at least a partial first name or partial last name for individual searches."])
 	#End individual query 
@@ -304,6 +305,7 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 					for line in report:
 						line[6] = datetime.fromtimestamp(line[6]).strftime('%m-%d-%Y')
 			report.insert(0,headers)
+			report.insert(0,[committeeNameID])
 		#if for some reason they entered the committee id incorrectly and nothing was returned, inform the user
 		#BUT IT DOESNT WORK FOR SOME REASON
 		else:
