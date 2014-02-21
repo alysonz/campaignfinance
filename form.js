@@ -99,13 +99,15 @@ $(document).ready(function() {
               var dataArray = jQuery.parseJSON(result);
               var committeeID = dataArray[0][0];
               var committeeName = dataArray[2][1];
-              var paragraph = $('#results').find("."+committeeID);
+              var paragraph = $('#data').find("."+committeeID);
               console.log(dataArray);
-              $('#results').find('#tabBar').append('<p id="tab" data-id="'+committeeID+'">'+committeeName+'</p>');
-              $('#results').find('#data').append('<p id="dataResult" class="'+committeeID+'">'+'</p>');
-              $('#results').find("."+committeeID).append('<h3>'+committeeName+'</h3>');
-              $('#results').find("."+committeeID).append('<a href="http://wildfire.codercollective.org/testcampaignfinance/download.cgi?'+formData+'">Download Data</a>')
-              $('#results').find("."+committeeID).append('<p class="dataResult">'+dataArray+'</p>');
+              $('#tabBar').append('<div id="tab" data-id="'+committeeID+'" class="'+committeeID+'"></div>');
+              $('#tabBar').find("."+committeeID).append('<img src="close.png">');
+              $('#tabBar').find("."+committeeID).append('<div id="tabName">'+committeeName+'</div>');
+              $('#data').append('<div id="dataResult" class="'+committeeID+'">'+'</div>');
+              $('#data').find("."+committeeID).append('<h3>'+committeeName+'</h3>');
+              $('#data').find("."+committeeID).append('<a href="http://wildfire.codercollective.org/testcampaignfinance/download.cgi?'+formData+'">Download Data</a>')
+              $('#data').find("."+committeeID).append('<p class="dataResult">'+dataArray+'</p>');
             }
           },
           complete: function () {
@@ -133,13 +135,15 @@ $(document).ready(function() {
             console.log(dataArray);
             var tabName = dataArray[0][0]+' '+ dataArray[0][1];
             var name = dataArray[0][0]+ dataArray[0][1];
-            $('#results').find('#tabBar').append('<p id="tab" data-id="'+name+'">'+tabName+'</p>');
-            $('#results').find('#data').append('<p id="dataResult" class="'+name+'">'+'</p>');
-            var paragraph = $('#results').find("."+name);
+            $('#tabBar').append('<div id="tab" data-id="'+name+'" class="'+name+'">'+'</div>');
+            $('#tabBar').find("."+name).append('<img src="close.png">');
+            $('#tabBar').find("."+name).append('<div id="tabName">'+tabName+'</div>');
+            $('#data').append('<div id="dataResult" class="'+name+'">'+'</div>');
+            var paragraph = $('#data').find("."+name);
             $(paragraph).append("<h3>"+tabName+"</h3>");
             $(paragraph).append('<a href="http://wildfire.codercollective.org/testcampaignfinance/download.cgi?'+formData+'">Download Data</a>');
             $(paragraph).append('<p class="dataResult">'+dataArray+"</p>");
-            $('#results').find('#data').children().addClass('hide');
+            $('#data').children().addClass('hide');
           }
         },
         complete: function() {
@@ -152,14 +156,22 @@ $(document).ready(function() {
     }
   });
   $('#tabBar').on('click', '#tab', function () {
-    committeeData = $(this).data();
-    console.log(committeeData["id"]);
+    var committeeData = $(this).data();
+//    console.log(committeeData["id"]);
     $('#tabBar').children().removeClass('highlight');
     $(this).addClass('highlight');
     $('#results').find('#data').children().removeClass('show');
     $('#results').find('#data').children().addClass('hide');
     $('#data').find("."+committeeData["id"]).removeClass('hide');
-    $('#data').find("."+committeeData["id"]).addClass('show');    
-    
+    $('#data').find("."+committeeData["id"]).addClass('show'); 
+  });
+  $('#tabBar').on('click', '#tab img',  function () {
+    var committeeData = $(this).closest('#tab').data();
+   $(this).closest('#tab').remove();
+   $('#data').find("."+committeeData["id"]).remove();
+   $('#data').children.removeClass('hide');
+   $('#data').children.addClass('hide');
+   $('#data').find('#dataResult').addClass('show');
+   $('#tabBar').find("#tab").addClass('highlight');
   });  
 });

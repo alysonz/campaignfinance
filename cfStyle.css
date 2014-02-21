@@ -39,14 +39,22 @@ border-width: 1px;
 #tab {
 float: left;
 width: 9%;
-height: 20px;
+height: 25px;
 margin: .1%;
-text-align: center;
 border-right: solid;
 border-width: 1px;
+}
+
+#tabName {
+text-align: center;
 white-space: nowrap;
 overflow: hidden;
 text-overflow: ellipsis;
+}
+
+img {
+float: right;
+padding: 2px;
 }
 
 .highlight {
