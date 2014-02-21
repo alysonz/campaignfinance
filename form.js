@@ -100,7 +100,7 @@ $(document).ready(function() {
               var committeeID = dataArray[0][0];
               var committeeName = dataArray[2][1];
               var paragraph = $('#data').find("."+committeeID);
-              console.log(dataArray);
+           //   console.log(dataArray);
               $('#tabBar').append('<div id="tab" data-id="'+committeeID+'" class="'+committeeID+'"></div>');
               $('#tabBar').find("."+committeeID).append('<img src="close.png">');
               $('#tabBar').find("."+committeeID).append('<div id="tabName">'+committeeName+'</div>');
@@ -155,23 +155,29 @@ $(document).ready(function() {
       });
     }
   });
-  $('#tabBar').on('click', '#tab', function () {
-    var committeeData = $(this).data();
-//    console.log(committeeData["id"]);
+  $('#tabBar').on('click', '#tabName', function () {
+    var committeeData = $(this).closest('#tab').data();
+    console.log(committeeData["id"]);
     $('#tabBar').children().removeClass('highlight');
-    $(this).addClass('highlight');
+    $(this).closest("#tab").addClass('highlight');
     $('#results').find('#data').children().removeClass('show');
     $('#results').find('#data').children().addClass('hide');
     $('#data').find("."+committeeData["id"]).removeClass('hide');
     $('#data').find("."+committeeData["id"]).addClass('show'); 
   });
-  $('#tabBar').on('click', '#tab img',  function () {
+  $('#tabBar').on('click', 'img',  function () {
     var committeeData = $(this).closest('#tab').data();
-   $(this).closest('#tab').remove();
-   $('#data').find("."+committeeData["id"]).remove();
-   $('#data').children.removeClass('hide');
-   $('#data').children.addClass('hide');
-   $('#data').find('#dataResult').addClass('show');
-   $('#tabBar').find("#tab").addClass('highlight');
+    var committeeTab = $(this).parent('.highlight');
+    if (committeeTab.length < 1) {
+      $(this).closest('#tab').remove();
+      $('#data').find("."+committeeData["id"]).remove();
+    }
+    else {
+      $(this).closest('#tab').remove();
+      $('#data').find("."+committeeData["id"]).remove();
+      $('#data').find('#dataResult').removeClass('hide');
+      $('#data').find('#dataResult').addClass('show');
+      $('#tabBar').find("#tab").addClass('highlight');
+    }
   });  
 });
