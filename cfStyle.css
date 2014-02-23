@@ -68,3 +68,8 @@ display: block;
 .hide {
 display: none;
 }
+
+#working {
+float: right;
+}
+

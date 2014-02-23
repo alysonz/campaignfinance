@@ -45,6 +45,16 @@ $(document).ready(function() {
     $.ajax("name.cgi", {
       type: 'POST',
       data: $(this).serialize(),
+      beforeSend: function() {
+        $('#committeeForm').find('#working').removeClass('hide');
+        $('#committeeForm').find('#working').addClass('show');
+      },
+      timeout: 10000,
+      error: function (request, errorType, errorMessage) {
+        $('#refine').find('#working').removeClass('show');
+        $('#refine').find('#working').addClass('hide');
+        alert('Error: '+errorType+'. Try narrowing search parameters.');
+      },
       success: function(result) {
 	var resultArray = jQuery.parseJSON(result);
         var committeeArray = new Array();
@@ -52,7 +62,11 @@ $(document).ready(function() {
          committeeArray[i] = '<input class="checkCommittee '+resultArray[i][0]+'" type="checkbox" value="'+resultArray[i][0]+'"'+'data-ID="'+resultArray[i][0]+'"'+' data-committeeName="'+resultArray[i][1]+'">'+resultArray[i][1]+", "+resultArray[i][4]+'</br>';
         }
         $('#committeeForm').append('<p class="committeeResult">'+committeeArray.join("")+'<button type="button">Remove Results</button></p>');
-        }
+      },
+      complete: function() {
+        $('#committeeForm').find('#working').removeClass('show');
+        $('#committeeForm').find('#working').addClass('hide');
+      }
     });
   }); 
   var dropList = new Array();
@@ -89,6 +103,14 @@ $(document).ready(function() {
         $.ajax("cfCGI.cgi", {
           type: 'POST',
           data: formData,
+          beforeSend: function() {
+          $('#refine').find('#working').removeClass('hide');
+          $('#refine').find('#working').addClass('show');
+          },
+          timeout: 10000,
+          error: function (request, errorType, errorMessage) {
+            alert('Error: '+errorType+'. Try narrowing search parameters.');
+          },
           success: function(result) {
             var dataArray = jQuery.parseJSON(result);
             var committeeID = dataArray[0][0];
@@ -146,6 +168,8 @@ $(document).ready(function() {
             }
           },
           complete: function () {
+            $('#refine').find('#working').removeClass('show');
+            $('#refine').find('#working').addClass('hide');
             $('#results').find('#data').children().addClass('hide');
             $('#results').find('#dataResult').removeClass('hide');
             $('#results').find('#dataResult').addClass('show');
@@ -166,6 +190,16 @@ $(document).ready(function() {
       $.ajax("cfCGI.cgi", {
         type: 'POST',
         data: formData,
+        beforeSend: function() {
+        $('#refine').find('#working').removeClass('hide');
+        $('#refine').find('#working').addClass('show');
+        },
+        timeout: 10000,
+        error: function (request, errorType, errorMessage) {
+          $('#refine').find('#working').removeClass('show');
+          $('#refine').find('#working').addClass('hide');
+          alert('Error: '+errorType+'. Try narrowing search parameters.');
+        },
         success: function(result) {
           var dataArray = jQuery.parseJSON(result);
           var name = dataArray[0][0]+ dataArray[0][1];
@@ -195,6 +229,8 @@ $(document).ready(function() {
           }
         },
         complete: function() {
+          $('#refine').find('#working').removeClass('show');
+          $('#refine').find('#working').addClass('hide');
           $('#results').find('#data').children().addClass('hide');
           $('#results').find('#dataResult').removeClass('hide');
           $('#results').find('#dataResult').addClass('show');
