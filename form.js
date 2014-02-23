@@ -49,7 +49,7 @@ $(document).ready(function() {
 	var resultArray = jQuery.parseJSON(result);
         var committeeArray = new Array();
         for (var i=0; i < resultArray.length; i++) {
-         committeeArray[i] = '<input class="checkCommittee" type="checkbox" value="'+resultArray[i][0]+'"'+'data-ID="'+resultArray[i][0]+'"'+' data-committeeName="'+resultArray[i][1]+'">'+resultArray[i][1]+", "+resultArray[i][4]+'</br>';
+         committeeArray[i] = '<input class="checkCommittee '+resultArray[i][0]+'" type="checkbox" value="'+resultArray[i][0]+'"'+'data-ID="'+resultArray[i][0]+'"'+' data-committeeName="'+resultArray[i][1]+'">'+resultArray[i][1]+", "+resultArray[i][4]+'</br>';
         }
         $('#committeeForm').append('<p class="committeeResult">'+committeeArray.join("")+'<button type="button">Remove Results</button></p>');
         }
@@ -98,16 +98,51 @@ $(document).ready(function() {
             if (paragraph.length < 1) {
               var dataArray = jQuery.parseJSON(result);
               var committeeID = dataArray[0][0];
-              var committeeName = dataArray[2][1];
               var paragraph = $('#data').find("."+committeeID);
            //   console.log(dataArray);
               $('#tabBar').append('<div id="tab" data-id="'+committeeID+'" class="'+committeeID+'"></div>');
-              $('#tabBar').find("."+committeeID).append('<img src="close.png">');
-              $('#tabBar').find("."+committeeID).append('<div id="tabName">'+committeeName+'</div>');
-              $('#data').append('<div id="dataResult" class="'+committeeID+'">'+'</div>');
-              $('#data').find("."+committeeID).append('<h3>'+committeeName+'</h3>');
-              $('#data').find("."+committeeID).append('<a href="http://wildfire.codercollective.org/testcampaignfinance/download.cgi?'+formData+'">Download Data</a>')
-              $('#data').find("."+committeeID).append('<p class="dataResult">'+dataArray+'</p>');
+              $('#tabBar').find("."+committeeID).append('<img src="close.png">'); 
+              if (dataArray[1][0] !== "Committee Type") {
+                $('#data').append('<div id="dataResult" class="'+committeeID+'">'+'</div>');
+                console.log(formData);
+                var id = dataArray[0][0];
+                var committeeArray = $('.committeeResult').find("."+id).data();
+                var committeeName = committeeArray["committeename"]
+                $('#tabBar').find("."+committeeID).append('<div id="tabName" class="error">Error</div>');
+                $('#data').find("."+committeeID).append('<h3>'+committeeName+'</h3>');
+                $('#data').find("."+committeeID).append('<p class="dataResult error">'+dataArray[1][0]+'</p>');
+                
+              }
+              else {
+                var committeeName = dataArray[2][1];
+                $('#tabBar').find("."+committeeID).append('<div id="tabName">'+committeeName+'</div>');
+                $('#data').append('<div id="dataResult" class="'+committeeID+'">'+'</div>');
+                $('#data').find("."+committeeID).append('<h3>'+committeeName+'</h3>');
+                $('#data').find("."+committeeID).append('<a href="http://wildfire.codercollective.org/testcampaignfinance/download.cgi?'+formData+'">Download Data</a>')
+                $('#data').find("."+committeeID).append('<p class="dataResult">'+dataArray+'</p>');
+              }
+            }
+            else {
+              var dataArray = jQuery.parseJSON(result);
+              var committeeID = dataArray[0][0];
+              if (dataArray[1][0] !== "Committee Type") {
+                if(($('#tabBar').find("."+committeeID).find(".error")).length < 1) {
+                  $('#tabBar').find("."+committeeID).find("#tabName").remove();
+                  $('#tabBar').find("."+committeeID).append('<div id="tabName" class="error">Error</div>');
+                }
+                $('#data').children('.'+committeeID).children('p').remove();
+                $('#data').children('.'+committeeID).children('a').remove();
+                $('#data').find("."+committeeID).append('<p class="dataResult error">'+dataArray[1][0]+'</p>');
+              }
+              else {
+              var committeeName = dataArray[2][1];
+              if(($('#tabBar').find("."+committeeID).find(".error")).length > 0) {
+                $('#tabBar').find("."+committeeID).find("#tabName").remove();
+                $('#tabBar').find("."+committeeID).append('<div id="tabName">'+committeeName+'</div>');
+              }
+              $('#data').children('.'+committeeID).children('p').remove();
+              $('#data').children('.'+committeeID).append('<p class="dataResult">'+dataArray+'</p>');  
+              }
             }
           },
           complete: function () {
@@ -118,8 +153,15 @@ $(document).ready(function() {
           }
         });
       }
-    }
-    else {
+    }    
+    var individualName = ($(this).serialize()).split('&');
+    individualName[0] = individualName[0].split('=');
+    individualName[0] = individualName[0][1].split('=');
+    individualName[1] = individualName[1].split('=');
+    individualName[1] = individualName[1][1];
+    individualName = individualName[0]+individualName[1];
+    console.log(individualName);
+    if (individualName.length > 0) {
       var formData = 'entityOneType=individual&'+$(this).serialize();
       $.ajax("cfCGI.cgi", {
         type: 'POST',
@@ -144,6 +186,12 @@ $(document).ready(function() {
             $(paragraph).append('<a href="http://wildfire.codercollective.org/testcampaignfinance/download.cgi?'+formData+'">Download Data</a>');
             $(paragraph).append('<p class="dataResult">'+dataArray+"</p>");
             $('#data').children().addClass('hide');
+          }
+          else {
+            var dataArray = jQuery.parseJSON(result);
+            var name = dataArray[0][0]+ dataArray[0][1];
+            $('#data').children('.'+name).children('p').remove();
+            $('#data').children('.'+name).append('<p class="dataResult">'+dataArray+'</p>');
           }
         },
         complete: function() {

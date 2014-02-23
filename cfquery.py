@@ -314,8 +314,6 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 	cursor.close()
 	if len(errorReport) > 0:
 		report.insert(1,errorReport)
-		report.insert(1,startDate)
-		report.insert(1,endDate)
 	return report
 
 

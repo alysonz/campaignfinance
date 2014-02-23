@@ -41,6 +41,7 @@ print "Content-disposition: attachment;filename=%s"%(download)
 print
 if entityOneType <> "blank":
 	if len(report) > 0:
+		report = report[1:]
 		for line in report:
 			line = [str(x) for x in line]
 			line = "|".join(line)
