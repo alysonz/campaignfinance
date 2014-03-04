@@ -12,6 +12,7 @@ $(document).ready(function() {
     entitySelection = $(".entityVal").val();
     console.log(entitySelection);
     if (entitySelection === "race") {
+      $('#refine').find('form').trigger('reset');
       $("#race").slideDown("fast");
       $("#submitSearch").slideDown("fast");
       $("#candidate").hide();
@@ -19,6 +20,7 @@ $(document).ready(function() {
       $("#individual").hide();
     }
     else if (entitySelection === "candidate") {
+      $('#refine').find('form').trigger('reset');
       $("#candidate").slideDown("fast");
       $("#submitSearch").slideDown("fast");
       $("#committee").hide();
@@ -26,6 +28,7 @@ $(document).ready(function() {
       $("#individual").hide();
     }
     else if (entitySelection === "committee") {
+     $('#refine').find('form').trigger('reset');
      $("#committee").slideDown("fast");
      $("#submitSearch").slideDown("fast");
      $("#race").hide();
@@ -112,7 +115,8 @@ $(document).ready(function() {
             alert('Error: '+errorType+'. Try narrowing search parameters.');
           },
           success: function(result) {
-            var dataArray = jQuery.parseJSON(result);
+            console.log(result);
+/*            var dataArray = jQuery.parseJSON(result);
             var committeeID = dataArray[0][0];
             var paragraph = $('#results').find("."+committeeID);
             $('#results').find('#data').children().removeClass('show');
@@ -121,7 +125,7 @@ $(document).ready(function() {
               var dataArray = jQuery.parseJSON(result);
               var committeeID = dataArray[0][0];
               var paragraph = $('#data').find("."+committeeID);
-           //   console.log(dataArray);
+              console.log(dataArray);
               $('#tabBar').append('<div id="tab" data-id="'+committeeID+'" class="'+committeeID+'"></div>');
               $('#tabBar').find("."+committeeID).append('<img src="close.png">'); 
               if (dataArray[1][0] !== "Committee Type") {
@@ -165,7 +169,7 @@ $(document).ready(function() {
               $('#data').children('.'+committeeID).children('p').remove();
               $('#data').children('.'+committeeID).append('<p class="dataResult">'+dataArray+'</p>');  
               }
-            }
+            }*/
           },
           complete: function () {
             $('#refine').find('#working').removeClass('show');

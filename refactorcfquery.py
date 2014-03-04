@@ -33,7 +33,36 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 	transactionsCycleFilter = []
 	transactionsTypeFilter = []
 	transactionFilter = []
-	hold = []
+	#functions
+	def getName(index):
+		#if the committee is a candidate committee and has a candidate ID, retrieve the candidate's information
+		if index <> 0:
+			cursor.execute("select * from names where nameID = %s;",(index))
+			#turn the information into a list
+			name = gettuple(cursor.fetchall())
+			#and discard everything that isn't the last and first name
+			name = name[3:5]
+		#If the committee does not have an associated candidate, create placeholders
+		else:
+			name = [0,0]
+		return name
+	def getCommittee(index):
+		#select the committee information associated with the reported transaction. There will only ever be one.
+		cursor.execute("select * from committees where committeeID = %s;",(index))
+		#make that information into a list
+		committee = gettuple(cursor.fetchall())
+		return committee
+	def getCommitteeName(index):
+		#select the name information for the committee associated with the transaction
+		cursor.execute("select * from names where nameID = %s;",(index))
+		#turn that information into a list
+		committeeName = gettuple(cursor.fetchall())
+		return committeeName
+	def getIndividualTransaction(index):
+		#select all corresponding transactions relating to the name result
+		cursor.execute("select * from transactions where nameID = %s;",(index))
+		transactions = cursor.fetchall()
+		return transactions
 	#begin individual query
 	if (entityOneType == "individual") and (entityOneFirstName or entityOneLastName):
 		#set up column names for report
@@ -48,33 +77,20 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 			individualNames = getlist(individualNames)
 			#for each name result
 			for line in individualNames:
-				#select all corresponding transactions relating to the name result
-				cursor.execute("select * from transactions where nameID = %s;",(line[0]))
-				individualTransaction = cursor.fetchall()
+				#use getIndividualTransaction to retrieve transactions
+				individualTransaction = getIndividualTransaction(line[0])
 				#if there is more than one transaction relating to this nameID
 				if len(individualTransaction) > 1:
 					#make individualTransactions a list of lists	
 					individualTransaction = getlist(individualTransaction)
 					#for each transaction
 					for instance in individualTransaction:
-						#select the committee information associated with the reported transaction. There will only ever be one.
-						cursor.execute("select * from committees where committeeID = %s;",(instance[4]))
-						#make that information into a list
-						committee = gettuple(cursor.fetchall())
-						#if the committee is a candidate committee and has a candidate ID, retrieve the candidate's information
-						if committee[4] <> 0:
-							cursor.execute("select * from names where nameID = %s;",(committee[4]))
-							#turn the information into a list
-							candidateName = gettuple(cursor.fetchall())
-							#and discard everything that isn't the last and first name
-							candidateName = candidateName[3:5]
-						#If the committee does not have an associated candidate, create placeholders
-						else:
-							candidateName = [0,0]
-						#select the name information for the committee associated with the transaction
-						cursor.execute("select * from names where nameID = %s;",(committee[1]))
-						#turn that information into a list
-						committeeName = gettuple(cursor.fetchall())
+						#use getCommittee to retrieve committee info
+						committee = getCommittee(instance[4])
+						#use getName to retrieve candidate name if exists
+						candidateName = getName(committee[4])
+						#use getCommitteeName to retrieve committee associated with transaction
+						committeeName = getCommitteeName(committee[1])
 						#create a list that contains only the information corresponding to column headers in report
 						individualLine = [line[2]] + [line[4]] + [line[3]] + line[5:12] + line[13:15] + [committeeName[3]] + [candidateName[1]] + [candidateName[0]] + committee[31:33] + [committee[34]] + [instance[3]] + [instance[5]] + [instance[9]] + instance[13:15]
 						#append this line to report
@@ -83,27 +99,10 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 				if len(individualTransaction) == 1:
 					#turn the transaction information into a list
 					individualTransaction = gettuple(individualTransaction)
-					#select the committee information associated with the reported transaction. There will only ever be one.
-					cursor.execute("select * from committees where committeeID = %s;",(individualTransaction[4]))
-					#make that information into a list
-					committee = gettuple(cursor.fetchall())
-					#if the committee is a candidate committee and has a candidate ID, retrieve the candidate's information
-					if committee[4] <> 0:
-						cursor.execute("select * from names where nameID = %s;",(committee[4]))
-						#turn the information into a list
-						candidateName = gettuple(cursor.fetchall())
-						#and discard everything that isn't the last and first name
-						candidateName = candidateName[3:5]
-					#If the committee does not have an associated candidate, create placeholders
-					else:
-						candidateName = [0,0]
-					#select the name information for the committee associated with the transaction
-					cursor.execute("select * from names where nameID = %s;",(committee[1]))
-					#turn that information into a list
-					committeeName = gettuple(cursor.fetchall())
-					#create a list that contains only the information corresponding to column headers in report
+					committee = getCommittee(individualTransaction[4])
+					candidateName = getName(committee[4])
+					committeeName = getCommitteeName(committee[1])
 					individualLine = [line[2]] + [line[4]] + [line[3]] + line[5:12] + line[13:15] + [committeeName[3]] + [candidateName[1]] + [candidateName[0]] + committee[31:33] + [committee[34]] + [individualTransaction[3]] + [individualTransaction[5]] + [individualTransaction[9]] + individualTransaction[13:15]
-					#append this line to report
 					report.append(individualLine)
 				#If for some reason there are no associated transactions which is tech. possible, inform the user
 				if len(report) == 0:
@@ -112,38 +111,23 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 		elif len(individualNames) == 1:
 			#turn that result into a list
 			individualNames = gettuple(individualNames)
-			#select the transactions associated with that individual
-			cursor.execute("select * from transactions where nameID = %s;",(individualNames[0]))
-			individualTransaction = cursor.fetchall()
+			#use getIndividualTransaction to retrieve transactions
+			individualTransaction = getIndividualTransaction(individualNames[0])
 			#if there is more than one transaction associated with that individual, follow the corresponding proceedures as detailed above
 			if len(individualTransaction) > 1:
 				individualTransaction = getlist(individualTransaction)
 				for instance in individualTransaction:
-					cursor.execute("select * from committees where committeeID = %s;",(instance[4]))
-					committee = gettuple(cursor.fetchall())
-					if committee[4] <> 0:
-						cursor.execute("select * from names where nameID = %s;",(committee[4]))
-						candidateName = gettuple(cursor.fetchall())
-						candidateName = candidateName[3:5]
-					else:
-						candidateName = [0,0]
-					cursor.execute("select * from names where nameID = %s;",(committee[1]))
-					committeeName = gettuple(cursor.fetchall())
+					committee = getCommittee(instance[4])
+					candidateName = getName(committee[4])
+					committeeName = getCommitteeName(committee[1])
 					individualLine = [individualNames[2]] + [individualNames[4]] + [individualNames[3]] + individualNames[5:12] + individualNames[13:15] + [committeeName[3]] + [candidateName[1]] + [candidateName[0]] + committee[31:33] + [committee[34]] + [instance[3]] + [instance[5]] + [instance[9]] + instance[13:15]
 					report.append(individualLine)
 			#if there is only one transaction associated with that individual, follow the corresponding proceedures as detailed above
 			if len(individualTransaction) == 1:
 				individualTransaction = gettuple(individualTransaction)
-				cursor.execute("select * from committees where committeeID = %s;",(individualTransaction[4]))
-				committee = gettuple(cursor.fetchall())
-				if committee[4] <> 0:
-					cursor.execute("select * from names where nameID = %s;",(committee[4]))
-					candidateName = gettuple(cursor.fetchall())
-					candidateName = candidateName[3:5]
-				else:
-					candidateName = [0,0]
-				cursor.execute("select * from names where nameID = %s;",(committee[1]))
-				committeeName = gettuple(cursor.fetchall())
+				committee = getCommittee(individualTransaction[4])
+				candidateName = getName(committee[4])
+				committeeName = getCommitteeName(committee[1])
 				individualLine = [individualNames[2]] + [individualNames[4]] + [individualNames[3]] + individualNames[5:12] + individualNames[13:15] + [committeeName[3]] + [candidateName[1]] + [candidateName[0]] + committee[31:33] + [committee[34]] + [individualTransaction[3]] + [individualTransaction[5]] + [individualTransaction[9]] + individualTransaction[13:15]
 				report.append(individualLine)
 			#if for some reason the name has no related transactions which is technically possible I guess, inform the user
@@ -280,6 +264,21 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 							errorReport.append("Message 15: No transactions exist for this committee on or before %s"%endDate)
 					else:
 						errorReport.append("Message 11: Invalid date format.")
+#			def transactionFilter(index, filterType, userFilter, transactionList):
+#				if len(transactionList) > 0:
+#					individualFilter = []
+#					if userFilter == filterType:
+#						for line in transactionList:
+#							if line[index] == filterType:
+#								individualFilter.append(line)
+#						transactionList = individualFilter
+#						if len(transactionList) == 0:
+#							transactionList = [["Message 17: No such expenses exist for this committee."]]
+#				return transactionList
+#			if transactionType == "expense":
+#				report = transactionFilter(5, "Expense", transactionType, report)
+#			if transactionType == "income":
+#				report = transactionFilter(5, "Income", transactionType, report)
 			if transactionType:
 				if len(report) > 0:
 					individualFilter = []
