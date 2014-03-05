@@ -178,15 +178,16 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 		#If there is no individual that matches the partial first and last name, inform the user
 		elif len(individualNames) == 0:
 			errorReport.append("Message 3: Individual not found.")
-		#time filter:
-		report = cycleFilter(19, cycleName, report)
-		report = dateFilter(19, startDate, "start", report)
-		report = dateFilter (19, endDate, "end", report)
-		#use transactionFilter to apply user option
-		report = transactionFilter(18, transactionType, report)
-		if len(report[0]) > 1:
-			for line in report:
-				line[19] = datetime.fromtimestamp(line[19]).strftime('%m-%d-%Y')
+		if len(report) <> 0:
+			#time filter:
+			report = cycleFilter(19, cycleName, report)
+			report = dateFilter(19, startDate, "start", report)
+			report = dateFilter (19, endDate, "end", report)
+			#use transactionFilter to apply user option
+			report = transactionFilter(18, transactionType, report)
+			if len(report[0]) > 1:
+				for line in report:
+					line[19] = datetime.fromtimestamp(line[19]).strftime('%m-%d-%Y')
 		report.insert(0, headers)
 		report.insert(0, [entityOneFirstName, entityOneLastName])
 	elif entityOneType <> "committee":
@@ -210,14 +211,15 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 				committeeTransaction = committeeName[2:4] + committee[31:33] + [committee[34]] + [line[3]] + [line[5]] + [line[9]] + line[13:15] + [recipient[2]] + [recipient[4]] + [recipient[3]] + recipient[7:12] + recipient[13:15]
 				#append that new line to reports
 				report.append(committeeTransaction)
-			#Filters
-			report = cycleFilter(6, cycleName, report)
-			report = dateFilter(6, startDate, "start", report)
-			report = dateFilter (6, endDate, "end", report)
-			report = transactionFilter(5, transactionType, report)
-			if len(report[0]) > 1:
-				for line in report:
-					line[6] = datetime.fromtimestamp(line[6]).strftime('%m-%d-%Y')
+			if len(report) <> 0:
+				#Filters
+				report = cycleFilter(6, cycleName, report)
+				report = dateFilter(6, startDate, "start", report)
+				report = dateFilter (6, endDate, "end", report)
+				report = transactionFilter(5, transactionType, report)
+				if len(report[0]) > 1:
+					for line in report:
+						line[6] = datetime.fromtimestamp(line[6]).strftime('%m-%d-%Y')
 			report.insert(0,headers)
 			report.insert(0,[committeeNameID])
 		else:
