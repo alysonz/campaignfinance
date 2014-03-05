@@ -90,8 +90,8 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 					transactionList = individualFilter
 				else:
 					transactionList = [["Message 10: Invalid date format."]]
-			if (len(transactionList[0]) == 1) and (transactionList[0][0] <> "Message 10: Invalid date format."):
-				transactionList = [["Message 21: no transactions exist for given date(s)"]]
+			if len(transactionList) == 0:
+				transactionList = [["Message 21: no transactions exist for given date(s)."]]
 		return transactionList
 	def transactionFilter(index, userFilter, transactionList):
 		if userFilter <> "all":
@@ -215,18 +215,17 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 			report = dateFilter(6, startDate, "start", report)
 			report = dateFilter (6, endDate, "end", report)
 			report = transactionFilter(5, transactionType, report)
-			if len(report) > 1:
-				line[6] = datetime.fromtimestamp(line[6]).strftime('%m-%d-%Y')
+			if len(report[0]) > 1:
+				for line in report:
+					line[6] = datetime.fromtimestamp(line[6]).strftime('%m-%d-%Y')
 			report.insert(0,headers)
 			report.insert(0,[committeeNameID])
-		#if for some reason they entered the committee id incorrectly and nothing was returned, inform the user
-		#BUT IT DOESNT WORK FOR SOME REASON
 		else:
 			errorReport.append("Message 12: incorrect committee ID")
 	db.commit()
 	cursor.close()
-	if len(errorReport) > 0:
-		report.insert(1,errorReport)
+#	if len(errorReport) > 0:
+#		report.insert(1,errorReport)
 	for line in report:
 		for item in line:
 			str(line).encode('utf8')
