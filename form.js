@@ -116,7 +116,7 @@ $(document).ready(function() {
           },
           success: function(result) {
             console.log(result);
-/*            var dataArray = jQuery.parseJSON(result);
+            var dataArray = jQuery.parseJSON(result);
             var committeeID = dataArray[0][0];
             var paragraph = $('#results').find("."+committeeID);
             $('#results').find('#data').children().removeClass('show');
@@ -169,7 +169,7 @@ $(document).ready(function() {
               $('#data').children('.'+committeeID).children('p').remove();
               $('#data').children('.'+committeeID).append('<p class="dataResult">'+dataArray+'</p>');  
               }
-            }*/
+            }
           },
           complete: function () {
             $('#refine').find('#working').removeClass('show');

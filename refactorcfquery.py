@@ -34,7 +34,7 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 	transactionsTypeFilter = []
 	transactionFilter = []
 	#functions
-	def getName(index):
+	def getCandidateName(index):
 		#if the committee is a candidate committee and has a candidate ID, retrieve the candidate's information
 		if index <> 0:
 			cursor.execute("select * from names where nameID = %s;",(index))
@@ -52,17 +52,34 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 		#make that information into a list
 		committee = gettuple(cursor.fetchall())
 		return committee
-	def getCommitteeName(index):
+	def getName(index):
 		#select the name information for the committee associated with the transaction
 		cursor.execute("select * from names where nameID = %s;",(index))
 		#turn that information into a list
 		committeeName = gettuple(cursor.fetchall())
 		return committeeName
-	def getIndividualTransaction(index):
+	def getTransaction(subject, index):
 		#select all corresponding transactions relating to the name result
-		cursor.execute("select * from transactions where nameID = %s;",(index))
-		transactions = cursor.fetchall()
+		if subject == "individual":
+			cursor.execute("select * from transactions where nameID = %s;",(index))
+			transactions = cursor.fetchall()
+		else:
+			cursor.execute("select * from transactions where committeeID = %s;",(index))
+			transactions = getlist(cursor.fetchall())
 		return transactions
+	def transactionFilter(index, userFilter, transactionList):
+		if len(transactionList) > 0:
+			individualFilter = []
+			for line in transactionList:
+				if line[index] == userFilter:
+					individualFilter.append(line)
+			transactionList = individualFilter
+			if len(transactionList) == 0:
+				transactionList = [["Message 17: No such expenses exist for this committee."]]
+		return transactionList
+#				report = transactionFilter(5, "Expense", transactionType, report)
+#			if transactionType == "income":
+#				report = transactionFilter(5, "Income", transactionType, report)
 	#begin individual query
 	if (entityOneType == "individual") and (entityOneFirstName or entityOneLastName):
 		#set up column names for report
@@ -77,20 +94,20 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 			individualNames = getlist(individualNames)
 			#for each name result
 			for line in individualNames:
-				#use getIndividualTransaction to retrieve transactions
-				individualTransaction = getIndividualTransaction(line[0])
+				#use getTransaction
+				individualTransaction = getTransaction("individual", line[0])
 				#if there is more than one transaction relating to this nameID
 				if len(individualTransaction) > 1:
 					#make individualTransactions a list of lists	
 					individualTransaction = getlist(individualTransaction)
 					#for each transaction
 					for instance in individualTransaction:
-						#use getCommittee to retrieve committee info
+						#use getCommittee to retrieve committee informatiion for transaction
 						committee = getCommittee(instance[4])
-						#use getName to retrieve candidate name if exists
-						candidateName = getName(committee[4])
-						#use getCommitteeName to retrieve committee associated with transaction
-						committeeName = getCommitteeName(committee[1])
+						#use getCandidateName ''
+						candidateName = getCandidateName(committee[4])
+						#use getName ''
+						committeeName = getName(committee[1])
 						#create a list that contains only the information corresponding to column headers in report
 						individualLine = [line[2]] + [line[4]] + [line[3]] + line[5:12] + line[13:15] + [committeeName[3]] + [candidateName[1]] + [candidateName[0]] + committee[31:33] + [committee[34]] + [instance[3]] + [instance[5]] + [instance[9]] + instance[13:15]
 						#append this line to report
@@ -100,9 +117,11 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 					#turn the transaction information into a list
 					individualTransaction = gettuple(individualTransaction)
 					committee = getCommittee(individualTransaction[4])
-					candidateName = getName(committee[4])
-					committeeName = getCommitteeName(committee[1])
+					candidateName = getCandidateName(committee[4])
+					committeeName = getName(committee[1])
+					#create a list that contains only the information corresponding to column headers in report
 					individualLine = [line[2]] + [line[4]] + [line[3]] + line[5:12] + line[13:15] + [committeeName[3]] + [candidateName[1]] + [candidateName[0]] + committee[31:33] + [committee[34]] + [individualTransaction[3]] + [individualTransaction[5]] + [individualTransaction[9]] + individualTransaction[13:15]
+					#append this line to report
 					report.append(individualLine)
 				#If for some reason there are no associated transactions which is tech. possible, inform the user
 				if len(report) == 0:
@@ -111,23 +130,22 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 		elif len(individualNames) == 1:
 			#turn that result into a list
 			individualNames = gettuple(individualNames)
-			#use getIndividualTransaction to retrieve transactions
-			individualTransaction = getIndividualTransaction(individualNames[0])
+			individualTransaction = getTransaction("individual", individualNames[0])
 			#if there is more than one transaction associated with that individual, follow the corresponding proceedures as detailed above
 			if len(individualTransaction) > 1:
 				individualTransaction = getlist(individualTransaction)
 				for instance in individualTransaction:
 					committee = getCommittee(instance[4])
-					candidateName = getName(committee[4])
-					committeeName = getCommitteeName(committee[1])
+					candidateName = getCandidateName(committee[4])
+					committeeName = getName(committee[1])
 					individualLine = [individualNames[2]] + [individualNames[4]] + [individualNames[3]] + individualNames[5:12] + individualNames[13:15] + [committeeName[3]] + [candidateName[1]] + [candidateName[0]] + committee[31:33] + [committee[34]] + [instance[3]] + [instance[5]] + [instance[9]] + instance[13:15]
 					report.append(individualLine)
 			#if there is only one transaction associated with that individual, follow the corresponding proceedures as detailed above
 			if len(individualTransaction) == 1:
 				individualTransaction = gettuple(individualTransaction)
 				committee = getCommittee(individualTransaction[4])
-				candidateName = getName(committee[4])
-				committeeName = getCommitteeName(committee[1])
+				candidateName = getCandidateName(committee[4])
+				committeeName = getName(committee[1])
 				individualLine = [individualNames[2]] + [individualNames[4]] + [individualNames[3]] + individualNames[5:12] + individualNames[13:15] + [committeeName[3]] + [candidateName[1]] + [candidateName[0]] + committee[31:33] + [committee[34]] + [individualTransaction[3]] + [individualTransaction[5]] + [individualTransaction[9]] + individualTransaction[13:15]
 				report.append(individualLine)
 			#if for some reason the name has no related transactions which is technically possible I guess, inform the user
@@ -173,22 +191,8 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 					report = individualFilter
 				else:
 					errorReport.append("Message 11: Invalid date format.")
-		if transactionType == "income":
-			if len(report) > 0:
-				individualFilter = []
-				for line in report:
-					if line[18] == "Income":
-						individualFilter.append(line)
-				report = individualFilter		
-		if transactionType == "expense":
-			if len(report) > 0:
-				individualFilter = []
-				for line in report:
-					if line[18] == "Expense":
-						individualFilter.append(line)
-				report = individualFilter
-				if len(report) == 0:
-					errorReport.append("Message 16: No expenses were paid to %s %s."%(entityOneFirstName, entityOneLastName))
+		if transactionType == "Expense" or transactionType == "Income":
+			report = transactionFilter(18, transactionType, report)
 		if len(report) > 0:
 			for line in report:
 				line[19] = datetime.fromtimestamp(line[19]).strftime('%m-%d-%Y')
@@ -198,26 +202,19 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 		report.append(["Message 18: Please fill in at least a partial first name or partial last name for individual searches."])
 	#End individual query 
 	if entityOneType == "committee":
-		#select name information for the nameID from the form
-		cursor.execute("select * from names where nameID = %s;",(committeeNameID))
-		#turn that information into a list
-		committeeName = gettuple(cursor.fetchall())
+		#use getName to get name information for ID from form
+		committee = getCommittee(committeeNameID)
 		#make sure the committee exists (no errors in inputting the id)
-		if len(committeeName) > 0:
-			#select the committee information
-			cursor.execute("select * from committees where nameID = %s;",(committeeName[0]))
-			#turn information into a list
-			committee = gettuple(cursor.fetchall())
-			#select transactions associated with the commmittee
-			cursor.execute("select * from transactions where committeeID = %s;",(committee[0]))
-			#turn information into a list of lists
-			transactions = getlist(cursor.fetchall())
+		if len(committee) > 0:
+			#use getCommittee
+			committeeName = getName(committee[1])
+			#get transactions
+			transactions = getTransaction("committee", committee[0])
 			#set up report column headings
 			headers = ['Committee Type','Committee Name', 'Committee Party', 'Committee Office', 'Incumbent: 1 = Yes', 'Transaction Type', 'Transaction Date', 'Transaction Amount', 'Transaction Memo', 'Transaction Category Name', 'Contributor/Payee Type', 'C/P First Name', 'C/P Last Name', 'C/P Address 1', 'C/P Address 2', 'C/P City', 'C/P State', 'C/P Zipcode', 'C/P Occupation', 'C/P Employer']
 			for line in transactions:
-				#select information about the contributor or payee involved in each transaction
-				cursor.execute("select * from names where nameID = %s;",(line[10]))	
-				recipient = gettuple(cursor.fetchall())		
+				#use getName to get contributor or payee involved in each transaction
+				recipient = getName(line[10])		
 				#build list that contains only the information referenced in the report headings
 				committeeTransaction = committeeName[2:4] + committee[31:33] + [committee[34]] + [line[3]] + [line[5]] + [line[9]] + line[13:15] + [recipient[2]] + [recipient[4]] + [recipient[3]] + recipient[7:12] + recipient[13:15]
 				#append that new line to reports
@@ -264,38 +261,8 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 							errorReport.append("Message 15: No transactions exist for this committee on or before %s"%endDate)
 					else:
 						errorReport.append("Message 11: Invalid date format.")
-#			def transactionFilter(index, filterType, userFilter, transactionList):
-#				if len(transactionList) > 0:
-#					individualFilter = []
-#					if userFilter == filterType:
-#						for line in transactionList:
-#							if line[index] == filterType:
-#								individualFilter.append(line)
-#						transactionList = individualFilter
-#						if len(transactionList) == 0:
-#							transactionList = [["Message 17: No such expenses exist for this committee."]]
-#				return transactionList
-#			if transactionType == "expense":
-#				report = transactionFilter(5, "Expense", transactionType, report)
-#			if transactionType == "income":
-#				report = transactionFilter(5, "Income", transactionType, report)
-			if transactionType:
-				if len(report) > 0:
-					individualFilter = []
-					if transactionType == "expense":
-						for line in report:
-							if line[5] == "Expense":
-								individualFilter.append(line)
-						report = individualFilter
-						if len(report) == 0:
-							errorReport.append("Message 17: No such expenses exist for this committee.")
-					if transactionType == "income":
-						for line in report:
-							if line[5] == "Income":
-								individualFilter.append(line)
-						report = individualFilter
-						if len(report) == 0:
-							errorReport.append("Message 17: No such income exist for this committee.")
+			if transactionType == "Expense" or transactionType == "Income":
+				report = transactionFilter(5, transactionType, report)
 			if len(report) > 0:
 				if len(report) > 1:
 					for line in report:
