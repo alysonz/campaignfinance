@@ -103,6 +103,7 @@ $(document).ready(function() {
       console.log($(this).val());
       for (var i=0; i < nameID.length; i++) {
         var formData = 'committeeNameID='+nameID[i]["id"]+'&'+'entityOneType=committee&'+$(this).serialize();
+	console.log(formData);
         $.ajax("cfCGI.cgi", {
           type: 'POST',
           data: formData,
@@ -191,6 +192,7 @@ $(document).ready(function() {
     console.log(individualName);
     if (individualName.length > 0) {
       var formData = 'entityOneType=individual&'+$(this).serialize();
+      console.log(formData);
       $.ajax("cfCGI.cgi", {
         type: 'POST',
         data: formData,

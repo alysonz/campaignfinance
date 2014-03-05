@@ -35,31 +35,22 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 	transactionFilter = []
 	#functions
 	def getCandidateName(index):
-		#if the committee is a candidate committee and has a candidate ID, retrieve the candidate's information
 		if index <> 0:
 			cursor.execute("select * from names where nameID = %s;",(index))
-			#turn the information into a list
 			name = gettuple(cursor.fetchall())
-			#and discard everything that isn't the last and first name
 			name = name[3:5]
-		#If the committee does not have an associated candidate, create placeholders
 		else:
 			name = [0,0]
 		return name
 	def getCommittee(index):
-		#select the committee information associated with the reported transaction. There will only ever be one.
 		cursor.execute("select * from committees where committeeID = %s;",(index))
-		#make that information into a list
-		committee = gettuple(cursor.fetchall())
-		return committee
+		result = gettuple(cursor.fetchall())
+		return result
 	def getName(index):
-		#select the name information for the committee associated with the transaction
 		cursor.execute("select * from names where nameID = %s;",(index))
-		#turn that information into a list
-		committeeName = gettuple(cursor.fetchall())
-		return committeeName
+		result = gettuple(cursor.fetchall())
+		return result
 	def getTransaction(subject, index):
-		#select all corresponding transactions relating to the name result
 		if subject == "individual":
 			cursor.execute("select * from transactions where nameID = %s;",(index))
 			transactions = cursor.fetchall()
@@ -67,19 +58,52 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 			cursor.execute("select * from transactions where committeeID = %s;",(index))
 			transactions = getlist(cursor.fetchall())
 		return transactions
-	def transactionFilter(index, userFilter, transactionList):
-		if len(transactionList) > 0:
-			individualFilter = []
-			for line in transactionList:
-				if line[index] == userFilter:
-					individualFilter.append(line)
-			transactionList = individualFilter
-			if len(transactionList) == 0:
-				transactionList = [["Message 17: No such expenses exist for this committee."]]
+	
+	def cycleFilter(index, cycleFilter, transactionList):
+		individualFilter = []
+		if len(transactionList[0]) >1:
+			if cycleFilter <> "all":
+				cursor.execute("select unixCycleBeginDate, unixCycleEndDate from cycles where cycleName = %s;",(cycleFilter))
+				cycleDates = gettuple(cursor.fetchall())
+				for line in transactionList:
+					if (line[index] >= cycleDates[0]) and (line[index] <= cycleDates[1]):
+						individualFilter.append(line)
+				transactionList = individualFilter
+				if len(transactionList) == 0:
+					transactionList = [["Message 20: No transactions exist for selected cycle."]]
 		return transactionList
-#				report = transactionFilter(5, "Expense", transactionType, report)
-#			if transactionType == "income":
-#				report = transactionFilter(5, "Income", transactionType, report)
+	def dateFilter(index, userFilter, filterType, transactionList):
+		if userFilter:
+			if len(transactionList[0]) > 1:
+				individualFilter = []
+				startDateTmp = userFilter.split("/")
+				if (len(startDateTmp[0]) == 2) and (len(startDateTmp[1]) == 2) and (len(startDateTmp[2]) == 4):
+					startDateTmp = datetime(int(startDateTmp[2]),int(startDateTmp[0]),int(startDateTmp[1]),0,0)
+					startDateTmp = calendar.timegm(startDateTmp.utctimetuple())
+					for line in transactionList:
+						if filterType == "start":
+							if line[index] >= startDateTmp:
+								individualFilter.append(line)
+						if filterType == "end":
+							if line[index] <= startDateTmp:
+								individualFilter.append(line)
+					transactionList = individualFilter
+				else:
+					transactionList = [["Message 10: Invalid date format."]]
+			if (len(transactionList[0]) == 1) and (transactionList[0][0] <> "Message 10: Invalid date format."):
+				transactionList = [["Message 21: no transactions exist for given date(s)"]]
+		return transactionList
+	def transactionFilter(index, userFilter, transactionList):
+		if userFilter <> "all":
+			if len(transactionList[0]) > 1:
+				individualFilter = []
+				for line in transactionList:
+					if line[index] == userFilter:
+						individualFilter.append(line)
+				transactionList = individualFilter
+				if len(transactionList) == 0:
+					transactionList = [["Message 17: No such expenses exist for this committee."]]
+		return transactionList
 	#begin individual query
 	if (entityOneType == "individual") and (entityOneFirstName or entityOneLastName):
 		#set up column names for report
@@ -155,45 +179,12 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 		elif len(individualNames) == 0:
 			errorReport.append("Message 3: Individual not found.")
 		#time filter:
-		if cycleName:
-			if len(report) > 0:
-				individualFilter = []
-				if cycleName <> "all":
-					cursor.execute("select unixCycleBeginDate, unixCycleEndDate from cycles where cycleName = %s;",(cycleName))
-					cycleDates = gettuple(cursor.fetchall())	
-					for line in report:
-						if (line[19] >= cycleDates[0]) and (line[19] <= cycleDates[1]):
-							individualFilter.append(line)
-					report = individualFilter
-		if startDate:
-			if len(report) > 0:
-				individualFilter = []
-				startDateTmp = startDate.split("/")
-				if (len(startDateTmp[0]) == 2) and (len(startDateTmp[1]) == 2) and (len(startDateTmp[2]) == 4):
-					startDateTmp = datetime(int(startDateTmp[2]),int(startDateTmp[0]),int(startDateTmp[1]),0,0)
-					startDateTmp = calendar.timegm(startDateTmp.utctimetuple())
-					for line in report:
-						if line[19] >= startDateTmp:
-							individualFilter.append(line)
-					report = individualFilter
-				else:
-					errorReport.append("Message 10: Invalid date format.")
-		if endDate:
-			if len(report) > 0:
-				individualFilter = []
-				endDateTmp = endDate.split("/")
-				if (len(endDateTmp[0]) == 2) and (len(endDateTmp[1]) == 2) and (len(endDateTmp[2]) == 4):
-					endDateTmp = datetime(int(endDateTmp[2]),int(endDateTmp[0]),int(endDateTmp[1]),0,0)
-					endDateTmp = calendar.timegm(endDateTmp.utctimetuple())
-					for line in report:
-						if line[19] <= endDateTmp:
-							individualFilter.append(line)
-					report = individualFilter
-				else:
-					errorReport.append("Message 11: Invalid date format.")
-		if transactionType == "Expense" or transactionType == "Income":
-			report = transactionFilter(18, transactionType, report)
-		if len(report) > 0:
+		report = cycleFilter(19, cycleName, report)
+		report = dateFilter(19, startDate, "start", report)
+		report = dateFilter (19, endDate, "end", report)
+		#use transactionFilter to apply user option
+		report = transactionFilter(18, transactionType, report)
+		if len(report[0]) > 1:
 			for line in report:
 				line[19] = datetime.fromtimestamp(line[19]).strftime('%m-%d-%Y')
 		report.insert(0, headers)
@@ -219,57 +210,13 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 				committeeTransaction = committeeName[2:4] + committee[31:33] + [committee[34]] + [line[3]] + [line[5]] + [line[9]] + line[13:15] + [recipient[2]] + [recipient[4]] + [recipient[3]] + recipient[7:12] + recipient[13:15]
 				#append that new line to reports
 				report.append(committeeTransaction)
-			if cycleName:
-				if len(report) > 0:
-					individualFilter = []
-					if cycleName <> "all":
-						cursor.execute("select unixCycleBeginDate, unixCycleEndDate from cycles where cycleName = %s;",(cycleName))
-						cycleDates = gettuple(cursor.fetchall())
-						for line in report:
-							if (line[6] >= cycleDates[0]) and (line[6] <= cycleDates[1]):
-								individualFilter.append(line)
-						report = individualFilter
-						if len(report) == 0:
-							errorReport.append("Message 13: No transactions exist for this committee in the %s cycle"%cycleName)
-			if startDate:
-				if len(report) > 0:
-					individualFilter = []
-					startDateTmp = startDate.split("/")
-					if (len(startDateTmp[0]) == 2) and (len(startDateTmp[1]) == 2) and (len(startDateTmp[2]) == 4):
-						startDateTmp = datetime(int(startDateTmp[2]),int(startDateTmp[0]),int(startDateTmp[1]),0,0)
-						startDateTmp = calendar.timegm(startDateTmp.utctimetuple())
-						for line in report:
-							if line[6] >= startDateTmp:
-								individualFilter.append(line)
-						report = individualFilter
-						if len(report) == 0:
-							errorReport.append("Message 14: No transactions exist for this committee on or after %s"%startDate)
-					else:
-						errorReport.append("Message 10: Invalid date format.")
-			if endDate:
-				if len(report) > 0:
-					individualFilter = []
-					endDateTmp = endDate.split("/")
-					if (len(endDateTmp[0]) == 2) and (len(endDateTmp[1]) == 2) and (len(endDateTmp[2]) == 4):
-						endDateTmp = datetime(int(endDateTmp[2]),int(endDateTmp[0]),int(endDateTmp[1]),0,0)
-						endDateTmp = calendar.timegm(endDateTmp.utctimetuple())
-						for line in report:
-							if line[6] <= endDateTmp:
-								individualFilter.append(line)
-						report = individualFilter
-						if len(report) == 0:
-							errorReport.append("Message 15: No transactions exist for this committee on or before %s"%endDate)
-					else:
-						errorReport.append("Message 11: Invalid date format.")
-			if transactionType == "Expense" or transactionType == "Income":
-				report = transactionFilter(5, transactionType, report)
-			if len(report) > 0:
-				if len(report) > 1:
-					for line in report:
-						line[6] = datetime.fromtimestamp(line[6]).strftime('%m-%d-%Y')
-				else:
-					for line in report:
-						line[6] = datetime.fromtimestamp(line[6]).strftime('%m-%d-%Y')
+			#Filters
+			report = cycleFilter(6, cycleName, report)
+			report = dateFilter(6, startDate, "start", report)
+			report = dateFilter (6, endDate, "end", report)
+			report = transactionFilter(5, transactionType, report)
+			if len(report) > 1:
+				line[6] = datetime.fromtimestamp(line[6]).strftime('%m-%d-%Y')
 			report.insert(0,headers)
 			report.insert(0,[committeeNameID])
 		#if for some reason they entered the committee id incorrectly and nothing was returned, inform the user
