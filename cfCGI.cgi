@@ -2,7 +2,7 @@
 #import resources
 import cgi
 import cgitb
-import refactorcfquery
+import cfquery
 import json
 def log(message):
 	file = open("/var/log/apache2/alyson.log","a")
@@ -36,7 +36,7 @@ if startDate:
 endDate = form.getvalue('endDate' ,False)
 if endDate:
 	endDate = cgi.escape(endDate)
-report = refactorcfquery.getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastName, cycleName, transactionType, startDate, endDate)
+report = cfquery.getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastName, cycleName, transactionType, startDate, endDate)
 #begin web content
 print "content-type:text/html"
 print
