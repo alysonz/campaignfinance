@@ -12,28 +12,19 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 	#connect to database
 	db = MySQLdb.connect(user=db_user, passwd=db_pass, db=db_db)
 	cursor = db.cursor()	
-	#individual query variables
+	#variables
 	committee = "you misspelled something somewhere"
 	individualNames = "you misspelled something somewhere"
 	candidateName = "you misspelled something somewhere"
 	committeeName = "you misspelled something somewhere"
 	individualTransaction = "you misspelled something somewhere"
-	reportName = []
-	individualLine = 0
+	individualLine = "you misspelled something somewhere"
 	report = []
-	cycleDates = "you misspelled something somewhere"
-	individualFilter = []
-	transactionDate = "you misspelled something somewhere"
 	headers = "you misspelled something somewhere"
-	startDateTmp = "you misspelled something somewhere"
-	endDateTmp = "you misspelled something somewhere"
 	recipient = "you misspelled something somewhere"
 	transactions = "you misspelled something somewhere"
-	errorReport = []
-	transactionsCycleFilter = []
-	transactionsTypeFilter = []
-	transactionFilter = []
 	#functions
+	#search names by nameID, return candidate name
 	def getCandidateName(index):
 		if index <> 0:
 			cursor.execute("select * from names where nameID = %s;",(index))
@@ -42,14 +33,17 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 		else:
 			name = [0,0]
 		return name
+	#search commitees by committeeID
 	def getCommittee(index):
 		cursor.execute("select * from committees where committeeID = %s;",(index))
 		result = gettuple(cursor.fetchall())
 		return result
+	#search names by nameID, return all
 	def getName(index):
 		cursor.execute("select * from names where nameID = %s;",(index))
 		result = gettuple(cursor.fetchall())
 		return result
+	#search transactions by either nameID or committeeID
 	def getTransaction(subject, index):
 		if subject == "individual":
 			cursor.execute("select * from transactions where nameID = %s;",(index))
@@ -58,7 +52,7 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 			cursor.execute("select * from transactions where committeeID = %s;",(index))
 			transactions = getlist(cursor.fetchall())
 		return transactions
-	
+	#filter transactions by cycle
 	def cycleFilter(index, cycleFilter, transactionList):
 		individualFilter = []
 		if len(transactionList[0]) >1:
@@ -72,20 +66,21 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 				if len(transactionList) == 0:
 					transactionList = [["Message 20: No transactions exist for selected cycle."]]
 		return transactionList
+	#filter transactions by date range
 	def dateFilter(index, userFilter, filterType, transactionList):
 		if userFilter:
 			if len(transactionList[0]) > 1:
 				individualFilter = []
-				startDateTmp = userFilter.split("/")
-				if (len(startDateTmp[0]) == 2) and (len(startDateTmp[1]) == 2) and (len(startDateTmp[2]) == 4):
-					startDateTmp = datetime(int(startDateTmp[2]),int(startDateTmp[0]),int(startDateTmp[1]),0,0)
-					startDateTmp = calendar.timegm(startDateTmp.utctimetuple())
+				dateTmp = userFilter.split("/")
+				if (len(dateTmp[0]) == 2) and (len(dateTmp[1]) == 2) and (len(dateTmp[2]) == 4):
+					dateTmp = datetime(int(dateTmp[2]),int(dateTmp[0]),int(dateTmp[1]),0,0)
+					dateTmp = calendar.timegm(dateTmp.utctimetuple())
 					for line in transactionList:
 						if filterType == "start":
-							if line[index] >= startDateTmp:
+							if line[index] >= dateTmp:
 								individualFilter.append(line)
 						if filterType == "end":
-							if line[index] <= startDateTmp:
+							if line[index] <= dateTmp:
 								individualFilter.append(line)
 					transactionList = individualFilter
 				else:
@@ -93,6 +88,7 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 			if len(transactionList) == 0:
 				transactionList = [["Message 21: no transactions exist for given date(s)."]]
 		return transactionList
+	#filter transactions by type
 	def transactionFilter(index, userFilter, transactionList):
 		if userFilter <> "all":
 			if len(transactionList[0]) > 1:
@@ -149,7 +145,7 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 					report.append(individualLine)
 				#If for some reason there are no associated transactions which is tech. possible, inform the user
 				if len(report) == 0:
-					errorReport.append("Message 1: No transactions found.")
+					report = [["Message 1: No transactions found."]]
 		#in the event that there is only one individual that matches the partial first and last name
 		elif len(individualNames) == 1:
 			#turn that result into a list
@@ -174,10 +170,10 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 				report.append(individualLine)
 			#if for some reason the name has no related transactions which is technically possible I guess, inform the user
 			if len(report) == 0:
-				errorReport.append("Message 2: No transactions found.")
+				report = [["Message 2: No transactions found."]]
 		#If there is no individual that matches the partial first and last name, inform the user
 		elif len(individualNames) == 0:
-			errorReport.append("Message 3: Individual not found.")
+			report = [["Message 3: Individual not found."]]
 		if len(report) <> 0:
 			#time filter:
 			report = cycleFilter(19, cycleName, report)
@@ -190,8 +186,6 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 					line[19] = datetime.fromtimestamp(line[19]).strftime('%m-%d-%Y')
 		report.insert(0, headers)
 		report.insert(0, [entityOneFirstName, entityOneLastName])
-	elif entityOneType <> "committee":
-		report.append(["Message 18: Please fill in at least a partial first name or partial last name for individual searches."])
 	#End individual query 
 	if entityOneType == "committee":
 		#use getName to get name information for ID from form
@@ -222,15 +216,9 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 						line[6] = datetime.fromtimestamp(line[6]).strftime('%m-%d-%Y')
 			report.insert(0,headers)
 			report.insert(0,[committeeNameID])
-		else:
-			errorReport.append("Message 12: incorrect committee ID")
 	db.commit()
 	cursor.close()
-#	if len(errorReport) > 0:
-#		report.insert(1,errorReport)
 	for line in report:
 		for item in line:
 			str(line).encode('utf8')
 	return report
-
-

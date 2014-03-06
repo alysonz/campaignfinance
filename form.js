@@ -247,7 +247,8 @@ $(document).ready(function() {
           }
         });
       }
-    }    
+    }   
+    //for individual searches, parse form information on submit to retrieve values for entityOneFirstName and ''LastName 
     var individualName = ($(this).serialize()).split('&');
     individualName[0] = individualName[0].split('=');
     individualName[0] = individualName[0][1].split('=');
@@ -255,50 +256,69 @@ $(document).ready(function() {
     individualName[1] = individualName[1][1];
     individualName = individualName[0]+individualName[1];
     console.log(individualName);
+    //if there was input into the first and last name fields for an individual search
     if (individualName.length > 0) {
+      //prepare data to send to cfCGI.cgi
       var formData = 'entityOneType=individual&'+$(this).serialize();
       console.log(formData);
       $.ajax("cfCGI.cgi", {
         type: 'POST',
         data: formData,
+        //add working animation
         beforeSend: function() {
         $('#refine').find('#working').removeClass('hide');
         $('#refine').find('#working').addClass('show');
         },
         timeout: 10000,
+        //add error message for timeout
         error: function (request, errorType, errorMessage) {
           $('#refine').find('#working').removeClass('show');
           $('#refine').find('#working').addClass('hide');
           alert('Error: '+errorType+'. Try narrowing search parameters.');
         },
         success: function(result) {
+          //parse results
           var dataArray = jQuery.parseJSON(result);
+          //grab individual name from results
           var name = dataArray[0][0]+ dataArray[0][1];
+          //set variable to locate class with individual name to see if a tab is already open
           var paragraph = $('#results').find("."+name);
+          //remove all select styles
           $('#results').find('#data').children().removeClass('show');
           $('#results').find("#tabBar").children().removeClass('highlight');
+          //if there is not already a paragraph for the searched individual
           if (paragraph.length < 1) {
             var dataArray = jQuery.parseJSON(result);
             console.log(dataArray);
+            //make a tab name with a space
             var tabName = dataArray[0][0]+' '+ dataArray[0][1];
+            //make a class name without a space
             var name = dataArray[0][0]+ dataArray[0][1];
+            //add a tab container with class of individual
             $('#tabBar').append('<div id="tab" data-id="'+name+'" class="'+name+'">'+'</div>');
+            //add close tab image
             $('#tabBar').find("."+name).append('<img src="close.png">');
+            //add tab text container and tab name
             $('#tabBar').find("."+name).append('<div id="tabName">'+tabName+'</div>');
+            //add data result container with class of individual
             $('#data').append('<div id="dataResult" class="'+name+'">'+'</div>');
             var paragraph = $('#data').find("."+name);
+            //add headline, download link and data results and hide all tabs
             $(paragraph).append("<h3>"+tabName+"</h3>");
             $(paragraph).append('<a href="http://wildfire.codercollective.org/testcampaignfinance/download.cgi?'+formData+'">Download Data</a>');
             $(paragraph).append('<p class="dataResult">'+dataArray+"</p>");
             $('#data').children().addClass('hide');
           }
+          //if a tab does exist for the searched individual
           else {
             var dataArray = jQuery.parseJSON(result);
             var name = dataArray[0][0]+ dataArray[0][1];
+            //remove existing data from results container and replace with new results
             $('#data').children('.'+name).children('p').remove();
             $('#data').children('.'+name).append('<p class="dataResult">'+dataArray+'</p>');
           }
         },
+        //remove working animation, hide all tabs, show first tab and first data result
         complete: function() {
           $('#refine').find('#working').removeClass('show');
           $('#refine').find('#working').addClass('hide');
@@ -310,24 +330,35 @@ $(document).ready(function() {
       });
     }
   });
+  //on selecting a tab for tab navigation
   $('#tabBar').on('click', '#tabName', function () {
+    //get tab's data
     var committeeData = $(this).closest('#tab').data();
     console.log(committeeData["id"]);
+    //remove highlighted from all tabs
     $('#tabBar').children().removeClass('highlight');
+    //add highlighted to the tab that was clicked
     $(this).closest("#tab").addClass('highlight');
+    //remove the show class from all results, add hide to all results
     $('#results').find('#data').children().removeClass('show');
     $('#results').find('#data').children().addClass('hide');
+    //remove hide from the results with class matching tab data and add show
     $('#data').find("."+committeeData["id"]).removeClass('hide');
     $('#data').find("."+committeeData["id"]).addClass('show'); 
   });
+  //on clicking the close image in the tab
   $('#tabBar').on('click', 'img',  function () {
+    //grab data from parent tab container, check to see if parent is highlighted
     var committeeData = $(this).closest('#tab').data();
-    var committeeTab = $(this).parent('.highlight');
+    var committeeTab = $(this).parent('highlighted');
+    //if parent is not highlighted, remove tab and corresponding results container
     if (committeeTab.length < 1) {
       $(this).closest('#tab').remove();
       $('#data').find("."+committeeData["id"]).remove();
     }
+    //if the tab container is highlighted
     else {
+      //remove tab and corresponding data result, highligh first tab and show first data result
       $(this).closest('#tab').remove();
       $('#data').find("."+committeeData["id"]).remove();
       $('#data').find('#dataResult').removeClass('hide');
