@@ -205,18 +205,13 @@ $(document).ready(function() {
                 $('#data').find(".id"+committeeID).append('<a href="http://wildfire.codercollective.org/testcampaignfinance/download.cgi?'+formData+'">Download Data</a>')
                 d3.select('#data .id'+committeeID)
                 .append('table')
-                .style('border-collapse', 'collapse')
-                .style('border', '2px black solid')
                 .selectAll('tr')
                 .data(dataArray)
                 .enter().append('tr')
                 .selectAll('td')
                 .data(function(d){return d;})
                 .enter().append("td")
-                .style('border', '1px black solid')
-                .style('padding', '10px')
                 .text(function(d) {return d;})
-                .style('font-size', "14px");
               }
             }
             //if this is a duplicated request, ie, there is already a tab with results for the committee in question
@@ -251,18 +246,13 @@ $(document).ready(function() {
               $('#data').children('.id'+committeeID).children('table').remove();
               d3.select('#data .id'+committeeID)
               .append('table')
-              .style('border-collapse', 'collapse')
-              .style('border', '2px black solid')
               .selectAll('tr')
               .data(dataArray)
               .enter().append('tr')
               .selectAll('td')
               .data(function(d){return d;})
               .enter().append("td")
-              .style('border', '1px black solid')
-              .style('padding', '10px')
               .text(function(d) {return d;})
-              .style('font-size', "14px");
               }
             }
           },
@@ -339,18 +329,13 @@ $(document).ready(function() {
             dataArray.splice(0,1);
             d3.select('#data .id'+name)
             .append('table')
-            .style('border-collapse', 'collapse')
-            .style('border', '2px black solid')
             .selectAll('tr')
             .data(dataArray)
             .enter().append('tr')
             .selectAll('td')
             .data(function(d){return d;})
             .enter().append("td")
-            .style('border', '1px black solid')
-            .style('padding', '10px')
             .text(function(d) {return d;})
-            .style('font-size', "14px");
             $('#data').children().addClass('hide');
           }
           //if a tab does exist for the searched individual
@@ -362,18 +347,13 @@ $(document).ready(function() {
             $('#data').children('.id'+name).children('table').remove();
             d3.select('#data .id'+name)
             .append('table')
-            .style('border-collapse', 'collapse')
-            .style('border', '2px black solid')
             .selectAll('tr')
             .data(dataArray)
             .enter().append('tr')
             .selectAll('td')
             .data(function(d){return d;})
             .enter().append("td")
-            .style('border', '1px black solid')
-            .style('padding', '10px')
             .text(function(d) {return d;})
-            .style('font-size', "14px");
           }
         },
         //remove working animation, hide all tabs, show first tab and first data result

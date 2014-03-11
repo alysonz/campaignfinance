@@ -201,6 +201,9 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 			for line in transactions:
 				#use getName to get contributor or payee involved in each transaction
 				recipient = getName(line[10])		
+				for i in range(0,len(recipient)):
+					recipient[i] = str(recipient[i])
+					recipient[i] = unicode(recipient[i], "ISO-8859-1")
 				#build list that contains only the information referenced in the report headings
 				committeeTransaction = committeeName[2:4] + committee[31:33] + [committee[34]] + [line[3]] + [line[5]] + [line[9]] + line[13:15] + [recipient[2]] + [recipient[4]] + [recipient[3]] + recipient[7:12] + recipient[13:15]
 				#append that new line to reports
