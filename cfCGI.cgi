@@ -12,6 +12,9 @@ def log(message):
 
 #get form variables
 form = cgi.FieldStorage()
+download = form.getvalue('download' ,False)
+if download:
+	download = cgi.escape(download)
 committeeNameID = form.getvalue('committeeNameID' ,False)
 if committeeNameID:
 	committeeNameID = cgi.escape(committeeNameID)
@@ -36,7 +39,7 @@ if startDate:
 endDate = form.getvalue('endDate' ,False)
 if endDate:
 	endDate = cgi.escape(endDate)
-report = cfquery.getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastName, cycleName, transactionType, startDate, endDate)
+report = cfquery.getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastName, cycleName, transactionType, startDate, endDate, download)
 #begin web content
 print "content-type:text/html"
 print

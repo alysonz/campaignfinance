@@ -51,15 +51,23 @@ if searchType == "race":
 			if len(committeesByRace) > 1:
 				committeesByRace = getlist(committeesByRace)
 				for line in committeesByRace:
-					cursor.execute("select lastName, firstName, entityTypeName from names where nameID = %s;",(line[1]))
+					cursor.execute("select firstName, lastName from names where nameID = %s;",(line[4]))
+					candidateName = gettuple(cursor.fetchall())
+					candidateName = candidateName[0]+' '+candidateName[1]
+					cursor.execute("select lastName from names where nameID = %s;",(line[1]))
 					committeeName = gettuple(cursor.fetchall())
+					committeeName.append(candidateName)
 					committeeName.append(line[35])
 					committeeName.insert(0, line[0])
 					report.append(committeeName)
 			elif len(committeesByRace) == 1:
+				cursor.execute("select firstName, lastName from names where nameID = %s;",(committeesByRace[4]))
+				candidateName = gettuple(cursor.fetchall())
+				candidateName = candidateName[0]+' '+candidateName[1]
 				committeesByRace = gettuple(committeesByRace)
-				cursor.execute("select lastName, firstName, entityTypeName from names where nameID = %s;",(committeesByRace[1]))
+				cursor.execute("select lastName from names where nameID = %s;",(committeesByRace[1]))
 				committeeName = gettuple(cursor.fetchall())
+				committeeName.append(candidateName)
 				committeeName.append(committeesByRace[35])
 				committeeName.insert(0, committeesByRace[0])
 				report.append(committeeName)
@@ -77,16 +85,16 @@ if searchType == "committee":
 		nameResult = gettuple(cursor.fetchall())
 		if len(nameResult) > 0:
 			for line in nameResult:
-				cursor.execute("select committeeID from committees where nameID = %s;",(line))
+				cursor.execute("select * from committees where nameID = %s;",(line))
 				committee = gettuple(cursor.fetchall())
 				if len(committee) > 0:
-					cursor.execute("select nameID from committees where committeeID = %s;",(committee[0]))
-					nameID = gettuple(cursor.fetchall())
-					cursor.execute("select lastName, firstName, entityTypeName from names where nameID = %s;",(nameID[0]))
+					cursor.execute("select lastName from names where nameID = %s;",(committee[1]))
 					possibleName = gettuple(cursor.fetchall())
-					cursor.execute("select cycleName from committees where nameID = %s;",(nameID[0]))
-					cycleName = gettuple(cursor.fetchall())
-					possibleName.append(cycleName[0])
+					cursor.execute("select firstName, lastName from names where nameID = %s;",(committee[4]))
+					candidateName = gettuple(cursor.fetchall())
+					candidateName = candidateName[0]+' '+candidateName[1]
+					possibleName.append(candidateName)
+					possibleName.append(committee[35])
 					possibleName.insert(0, committee[0])
 					#list of committee names		
 					report.append(possibleName)
@@ -111,17 +119,31 @@ if searchType == "candidate":
 		if len(nameResult) > 1:
 			for line in nameResult:
 				cursor.execute("select * from committees where candidateNameID = %s;",(line))
-				candidate = gettuple(cursor.fetchall())
-				if len(candidate) > 0:
+				candidate = cursor.fetchall()
+				if len(candidate) > 1:
+					candidate = getlist(candidate)
+					for item in candidate:
+						cursor.execute("select firstName, lastName from names where nameID = %s;",(item[4]))
+						possibleName = gettuple(cursor.fetchall())
+						possibleName = [possibleName[0]+ ' '+possibleName[1]]
+						possibleName.append(item[35])
+						cursor.execute("select * from names where nameID = %s;",(item[1]))
+						committeeName = gettuple(cursor.fetchall())
+						possibleName.insert(0,committeeName[3])
+						possibleName.insert(0, item[0])
+						report.append(possibleName)
+				if len(candidate) == 1:
+					candidate = gettuple(candidate)
 					#select the english name and nameID for the candidateID
-					cursor.execute("select lastName, firstName from names where nameID = %s;",(candidate[4]))
+					cursor.execute("select firstName, lastName from names where nameID = %s;",(candidate[4]))
 					#make a list of that information
 					possibleName = gettuple(cursor.fetchall())
+					possibleName = [possibleName[0]+ ' '+possibleName[1]]
 					#append the cycle name from their committee information to their english name information
 					possibleName.append(candidate[35])
 					cursor.execute("select * from names where nameID = %s;",(candidate[1]))
 					committeeName = gettuple(cursor.fetchall())
-					possibleName.append(committeeName[3])
+					possibleName.insert(0,committeeName[3])
 					possibleName.insert(0, candidate[0])
 					#append each candidate's name to the final report
 					report.append(possibleName)

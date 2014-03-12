@@ -8,7 +8,7 @@ from gettuple import gettuple
 from gettuple import getlist
 import os
 from parms import *
-def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastName, cycleName, transactionType, startDate, endDate):
+def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastName, cycleName, transactionType, startDate, endDate, download):
 	#connect to database
 	db = MySQLdb.connect(user=db_user, passwd=db_pass, db=db_db)
 	cursor = db.cursor()	
@@ -221,7 +221,4 @@ def getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastN
 			report.insert(0,[committeeNameID])
 	db.commit()
 	cursor.close()
-	for line in report:
-		for item in line:
-			str(line).encode('utf8')
 	return report

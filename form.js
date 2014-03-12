@@ -71,12 +71,13 @@ $(document).ready(function() {
       },
       success: function(result) {
         //parse JSON
-	var resultArray = jQuery.parseJSON(result);
+				var resultArray = jQuery.parseJSON(result);
         //set blank array for iterating through results and adding style
         var committeeArray = new Array();
+				console.log(resultArray);
         for (var i=0; i < resultArray.length; i++) {
          //iterate through results array, add checkbox input with class, add id and committee name data to input , committee information text inside of input
-         committeeArray[i] = '<input class="checkCommittee '+resultArray[i][0]+'" type="checkbox" value="'+resultArray[i][0]+'"'+'data-ID="'+resultArray[i][0]+'"'+' data-committeeName="'+resultArray[i][1]+'">'+resultArray[i][1]+", "+resultArray[i][4]+'</br>';
+         committeeArray[i] = '<input class="checkCommittee '+resultArray[i][0]+'" type="checkbox" value="'+resultArray[i][0]+'" data-ID="'+resultArray[i][0]+'" data-committeeName="'+resultArray[i][1]+'" data-cycle="'+resultArray[i][3]+'">'+resultArray[i][1]+", "+resultArray[i][2]+', '+resultArray[i][3]+'</br>';
         }
         //append styled array to results paragraph, add button to get rid of checkbox block
         $('#committeeForm').append('<p class="committeeResult">'+committeeArray.join("")+'<button type="button">Remove Results</button></p>');
@@ -135,7 +136,7 @@ $(document).ready(function() {
       //iterate through list and send ajax call for each id
       for (var i=0; i < nameID.length; i++) {
         //add committee id and committee as entity to list of information to sent to CGI script
-        var formData = 'committeeNameID='+nameID[i]["id"]+'&'+'entityOneType=committee&'+$(this).serialize();
+        var formData = 'committeeNameID='+nameID[i]["id"]+'&'+'entityOneType=committee&'+$(this).serialize()+'&download=';
 	console.log(formData);
         $.ajax("cfCGI.cgi", {
           type: 'POST',
@@ -176,7 +177,6 @@ $(document).ready(function() {
               if (dataArray[2].length < 2) {
                 //so in the main data field, add a containder for the results with the class of the committee id
                 $('#data').append('<div id="dataResult" class="id'+committeeID+'">'+'</div>');
-                console.log(formData);
                 var id = dataArray[0][0];
                 //grab data array from the committee result input checkbox with the same committee id
                 var committeeArray = $('.committeeResult').find("."+id).data();
@@ -188,21 +188,22 @@ $(document).ready(function() {
                 $('#data').find(".id"+committeeID).append('<h3>'+committeeName+'</h3>');
                 //print out results we did get back since that should contain a detailed error message from cfquery.py
                 $('#data').find(".id"+committeeID).append('<p class="dataResult error">'+dataArray[2]+'</p>');
-                
-              }
+							}
               //if the data does look like it has returned without an 'undefined' error
               else {
                 //set committee name from results
-		var committeeName = dataArray[2][1];
-                dataArray.splice(0,1);
+								var committeeName = dataArray[2][1];
+								dataArray.splice(0,1);
                 console.log(dataArray);
                 //set tab to contain committee name 
                 $('#tabBar').find(".id"+committeeID).append('<div id="tabName">'+committeeName+'</div>');
                 //create results container with id of committee
                 $('#data').append('<div id="dataResult" class="id'+committeeID+'">'+'</div>');
                 //insert committee name as headline, link for downloading from download.CGI with the same formData, and add results array
-                $('#data').find(".id"+committeeID).append('<h3>'+committeeName+'</h3>');
-                $('#data').find(".id"+committeeID).append('<a href="http://wildfire.codercollective.org/testcampaignfinance/download.cgi?'+formData+'">Download Data</a>')
+								var cycle = $('#search').children('#committeeForm').find('input.'+committeeID).data();
+                $('#data').find(".id"+committeeID).append('<h3>'+committeeName+' '+cycle['cycle']+'</h3>');
+								$('#data').find(".id"+committeeID).find("h3").append(' <p id="recordCount"> ('+(dataArray.length-1)+' transaction records)</p>');
+                $('#data').find(".id"+committeeID).append('<a href="http://wildfire.codercollective.org/testcampaignfinance/download.cgi?'+formData+'&download=True'+'">Download Data</a>')
                 d3.select('#data .id'+committeeID)
                 .append('table')
                 .selectAll('tr')
@@ -228,21 +229,24 @@ $(document).ready(function() {
                 //leave headline in place but remove download link and data results
                 $('#data').children('.id'+committeeID).children('table').remove();
                 $('#data').children('.id'+committeeID).children('a').remove();
+								$('#data').children('.id'+committeeID).find('h3').find('p').remove();
                 //replace data results with error message from cfquery.py
                 $('#data').find(".id"+committeeID).append('<p class="dataResult error">'+dataArray[2]+'</p>');
               }
               //if results are not an error
               else {
               var committeeName = dataArray[2][1];
+							dataArray.splice(0,1);
               //but the previous results /were/ an error
               if(($('#tabBar').find(".id"+committeeID).find(".error")).length > 0) {
                 //replace error text with the committee name
                 $('#tabBar').find(".id"+committeeID).find("#tabName").remove();
                 $('#tabBar').find(".id"+committeeID).append('<div id="tabName">'+committeeName+'</div>');
                 $('#data').children('.id'+committeeID).children('p').remove();
+								$('#data').find(".id"+committeeID).append('<a href="http://wildfire.codercollective.org/testcampaignfinance/download.cgi?'+formData+'&download=True'+'">Download Data</a>')
+								$('#data').children('.id'+committeeID).find('h3').append(' <p id="recordCount"> ('+(dataArray.length-1)+' transaction records)</p>');
               }
               //replace old results with new results
-              dataArray.splice(0,1);
               $('#data').children('.id'+committeeID).children('table').remove();
               d3.select('#data .id'+committeeID)
               .append('table')
@@ -279,7 +283,7 @@ $(document).ready(function() {
     //if there was input into the first and last name fields for an individual search
     if (individualName.length > 0) {
       //prepare data to send to cfCGI.cgi
-      var formData = 'entityOneType=individual&'+$(this).serialize();
+      var formData = 'entityOneType=individual&'+$(this).serialize()+'&download=';
       console.log(formData);
       $.ajax("cfCGI.cgi", {
         type: 'POST',
@@ -325,7 +329,7 @@ $(document).ready(function() {
             var paragraph = $('#data').find(".id"+name);
             //add headline, download link and data results and hide all tabs
             $(paragraph).append("<h3>"+tabName+"</h3>");
-            $(paragraph).append('<a href="http://wildfire.codercollective.org/testcampaignfinance/download.cgi?'+formData+'">Download Data</a>');
+            $(paragraph).append('<a href="http://wildfire.codercollective.org/testcampaignfinance/download.cgi?'+formData+'&download=True'+'">Download Data</a>');
             dataArray.splice(0,1);
             d3.select('#data .id'+name)
             .append('table')
