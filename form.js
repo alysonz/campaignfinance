@@ -322,43 +322,82 @@ $(document).ready(function() {
             $('#tabBar').append('<div id="tab" data-id="'+name+'" class="id'+name+'">'+'</div>');
             //add close tab image
             $('#tabBar').find(".id"+name).append('<img src="close.png">');
-            //add tab text container and tab name
-            $('#tabBar').find(".id"+name).append('<div id="tabName">'+tabName+'</div>');
-            //add data result container with class of individual
-            $('#data').append('<div id="dataResult" class="id'+name+'">'+'</div>');
-            var paragraph = $('#data').find(".id"+name);
-            //add headline, download link and data results and hide all tabs
-            $(paragraph).append("<h3>"+tabName+"</h3>");
-            $(paragraph).append('<a href="http://wildfire.codercollective.org/testcampaignfinance/download.cgi?'+formData+'&download=True'+'">Download Data</a>');
-            dataArray.splice(0,1);
-            d3.select('#data .id'+name)
-            .append('table')
-            .selectAll('tr')
-            .data(dataArray)
-            .enter().append('tr')
-            .selectAll('td')
-            .data(function(d){return d;})
-            .enter().append("td")
-            .text(function(d) {return d;})
-            $('#data').children().addClass('hide');
-          }
+						//if first item of third list has only one item it is an error message
+						$('#data').append('<div id="dataResult" class="id'+name+'">'+'</div>');
+						if (dataArray[2].length < 2) {
+							$('tabBar').find(".id"+name).append('<div id="tabName" class="error">Error</div>');
+							var paragraph = $('#data').find(".id"+name);
+							$(paragraph).append("<h3>"+tabName+"</h3>");
+							$(paragraph).append('<p class="error">'+dataArray[2][0]+'</p>');
+						}
+            else{
+							//add tab text container and tab name
+            	$('#tabBar').find(".id"+name).append('<div id="tabName">'+tabName+'</div>');
+            	//add data result container with class of individual
+							$('#data').append('<div id="dataResult" class="id'+name+'">'+'</div>');
+            	var paragraph = $('#data').find(".id"+name);
+            	//add headline, download link and data results and hide all tabs
+            	$(paragraph).append("<h3>"+tabName+"</h3>");
+            	$(paragraph).append('<a href="http://wildfire.codercollective.org/testcampaignfinance/download.cgi?'+formData+'&download=True'+'">Download Data</a>');
+            	dataArray.splice(0,1);
+            	d3.select('#data .id'+name)
+            	.append('table')
+            	.selectAll('tr')
+            	.data(dataArray)
+            	.enter().append('tr')
+            	.selectAll('td')
+            	.data(function(d){return d;})
+            	.enter().append("td")
+            	.text(function(d) {return d;})
+            	$('#data').children().addClass('hide');
+						}
+					}
           //if a tab does exist for the searched individual
           else {
             var dataArray = jQuery.parseJSON(result);
             var name = dataArray[0][0]+ dataArray[0][1];
+						var tabName = dataArray[0][0]+' '+ dataArray[0][1];
             //remove existing data from results container and replace with new results
-            dataArray.splice(0,1);
             $('#data').children('.id'+name).children('table').remove();
-            d3.select('#data .id'+name)
-            .append('table')
-            .selectAll('tr')
-            .data(dataArray)
-            .enter().append('tr')
-            .selectAll('td')
-            .data(function(d){return d;})
-            .enter().append("td")
-            .text(function(d) {return d;})
-          }
+						$('#data').children('.id'+name).children('p').remove();
+						//if the new data contains an error
+						if (dataArray[2].length < 2) {
+							//and the previous tab was not an error
+							var errorTab =  $('tabBar').find(".id"+name).children('.error');
+							if (errorTab.length < 1) {
+								$('tabBar').find(".id"+name).find("#tabName").remove();
+								$('tabBar').find(".id"+name).append('<div id="tabName" class="error">Error</div>');
+							}
+							$('#data').find('#dataResult.id'+name).find('a').remove();
+							$('#data').find('#dataResult.id'+name).find('table').remove();
+							$('#data').find('#dataResult.id'+name).find('p').remove();
+							var paragraph = $('#data').find(".id"+name);
+							$(paragraph).append('<p class="error">'+dataArray[2][0]+'</p>');
+						}
+						//if new data is not an error
+						else {
+							var paragraph = $('#data').find('#dataResult.id'+name)
+							//but the last data was an error
+							var errorTab =  $('tabBar').find(".id"+name).children('.error')
+							if (errorTab.length > 0) {
+								$('tabBar').find(".id"+name).find("#tabName.error").remove()
+								$('#tabBar').find(".id"+name).append('<div id="tabName">'+tabName+'</div>');
+								$(paragraph).append('<a href="http://wildfire.codercollective.org/testcampaignfinance/download.cgi?'+formData+'&download=True'+'">Download Data</a>');
+							}
+							$(paragraph).find('table').remove();
+							$(paragraph).find('p').remove();
+							dataArray.splice(0,1);
+							d3.select('#data .id'+name)
+							.append('table')
+            	.selectAll('tr')
+            	.data(dataArray)
+            	.enter().append('tr')
+            	.selectAll('td')
+            	.data(function(d){return d;})
+            	.enter().append("td")
+            	.text(function(d) {return d;})
+						}
+					}	
         },
         //remove working animation, hide all tabs, show first tab and first data result
         complete: function() {

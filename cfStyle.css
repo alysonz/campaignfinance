@@ -1,11 +1,11 @@
 #main {
 font-family: arial;
-width: 85%;
-padding: 4%;
+width: 98%;
+padding: 1%;
 }
 
 #search {
-width:25%;
+width:20%;
 padding: .5%;
 float: left;
 border-right: solid;
@@ -20,14 +20,14 @@ text-align: center;
 }
 
 #results {
-width:70%;
+width:77%;
 padding: .5%;
 float: right;
 }
 
 #data {
 width: 100%;
-padding: 1%;
+padding: .5%;
 }
 
 #tabBar {
@@ -81,7 +81,7 @@ border: 2px solid black;
 
 td {
 border: 1px solid black;
-padding: 5px;
+padding: 4px;
 font-size: 12px;
 }
 
