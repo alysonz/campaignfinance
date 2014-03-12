@@ -4,8 +4,16 @@ width: 98%;
 padding: 1%;
 }
 
-#search {
+.searchMax {
 width:20%;
+padding: .5%;
+float: left;
+border-right: solid;
+border-width: 1px;
+}
+
+.searchMin {
+width: 1%;
 padding: .5%;
 float: left;
 border-right: solid;
@@ -19,8 +27,14 @@ text-align: center;
 
 }
 
-#results {
+.resultsMin {
 width:77%;
+padding: .5%;
+float: right;
+}
+
+.resultsMax {
+width:97%;
 padding: .5%;
 float: right;
 }
@@ -51,6 +65,11 @@ text-align: center;
 white-space: nowrap;
 overflow: hidden;
 text-overflow: ellipsis;
+}
+
+.min{
+float: right;
+padding: 10px;
 }
 
 img {

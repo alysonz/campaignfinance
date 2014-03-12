@@ -435,7 +435,7 @@ $(document).ready(function() {
   $('#tabBar').on('click', 'img',  function () {
     //grab data from parent tab container, check to see if parent is highlighted
     var committeeData = $(this).closest('#tab').data();
-    var committeeTab = $(this).parent('highlighted');
+    var committeeTab = $(this).parent('.highlight');
     //if parent is not highlighted, remove tab and corresponding results container
     if (committeeTab.length < 1) {
       $(this).closest('#tab').remove();
@@ -451,4 +451,24 @@ $(document).ready(function() {
       $('#tabBar').find("#tab").addClass('highlight');
     }
   });  
+	//on click, minimize search
+	$('#search').find('#min').on('click', 'img', function() {
+		type = $(this).data();
+		if (type['type'] === 'min') {
+			$(this).parent().append('<img class="min" data-type="max" src="arrow-right-2.png">');
+			$(this).closest('#search').children('#committeeForm, #refine').removeClass('show');
+			$(this).closest('#search').children('#committeeForm, #refine').addClass('hide');
+			$(this).closest('#search').removeClass('searchMax').addClass('searchMin');
+			$('#results').removeClass('resultsMin').addClass('resultsMax');
+			$(this).remove();
+		}
+		else {
+			$(this).parent().append('<img class="min" data-type="min" src="arrow-left-2.png">');
+			$(this).closest('#search').children('#committeeForm, #refine').removeClass('hide');
+			$(this).closest('#search').children('#committeeForm, #refine').addClass('show');
+			$(this).closest('#search').removeClass('searchMin').addClass('searchMax');
+			$('#results').removeClass('resultsMax').addClass('resultsMin');
+			$(this).remove();
+		}
+	});
 });
