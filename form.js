@@ -325,7 +325,7 @@ $(document).ready(function() {
 						//if first item of third list has only one item it is an error message
 						$('#data').append('<div id="dataResult" class="id'+name+'">'+'</div>');
 						if (dataArray[2].length < 2) {
-							$('tabBar').find(".id"+name).append('<div id="tabName" class="error">Error</div>');
+							$('#tabBar').find(".id"+name).append('<div id="tabName" class="error">Error</div>');
 							var paragraph = $('#data').find(".id"+name);
 							$(paragraph).append("<h3>"+tabName+"</h3>");
 							$(paragraph).append('<p class="error">'+dataArray[2][0]+'</p>');
@@ -363,10 +363,10 @@ $(document).ready(function() {
 						//if the new data contains an error
 						if (dataArray[2].length < 2) {
 							//and the previous tab was not an error
-							var errorTab =  $('tabBar').find(".id"+name).children('.error');
+							var errorTab =  $('#tabBar').find(".id"+name).children('.error');
 							if (errorTab.length < 1) {
-								$('tabBar').find(".id"+name).find("#tabName").remove();
-								$('tabBar').find(".id"+name).append('<div id="tabName" class="error">Error</div>');
+								$('#tabBar').find(".id"+name).find("#tabName").remove();
+								$('#tabBar').find(".id"+name).append('<div id="tabName" class="error">Error</div>');
 							}
 							$('#data').find('#dataResult.id'+name).find('a').remove();
 							$('#data').find('#dataResult.id'+name).find('table').remove();
@@ -378,9 +378,9 @@ $(document).ready(function() {
 						else {
 							var paragraph = $('#data').find('#dataResult.id'+name)
 							//but the last data was an error
-							var errorTab =  $('tabBar').find(".id"+name).children('.error')
+							var errorTab =  $('#tabBar').find(".id"+name).children('.error')
 							if (errorTab.length > 0) {
-								$('tabBar').find(".id"+name).find("#tabName.error").remove()
+								$('#tabBar').find(".id"+name).find(".error").remove()
 								$('#tabBar').find(".id"+name).append('<div id="tabName">'+tabName+'</div>');
 								$(paragraph).append('<a href="http://wildfire.codercollective.org/testcampaignfinance/download.cgi?'+formData+'&download=True'+'">Download Data</a>');
 							}
