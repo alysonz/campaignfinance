@@ -244,8 +244,9 @@ $(document).ready(function() {
                 $('#tabBar').find(".id"+committeeID).append('<div id="tabName">'+committeeName+'</div>');
                 $('#data').children('.id'+committeeID).children('p').remove();
 								$('#data').find(".id"+committeeID).append('<a href="http://wildfire.codercollective.org/testcampaignfinance/download.cgi?'+formData+'&download=True'+'">Download Data</a>')
-								$('#data').children('.id'+committeeID).find('h3').append(' <p id="recordCount"> ('+(dataArray.length-1)+' transaction records)</p>');
               }
+							$('#data').children('.id'+committeeID).find('h3').children('p').remove();
+							$('#data').children('.id'+committeeID).find('h3').append(' <p id="recordCount"> ('+(dataArray.length-1)+' transaction records)</p>');
               //replace old results with new results
               $('#data').children('.id'+committeeID).children('table').remove();
               d3.select('#data .id'+committeeID)
@@ -332,14 +333,15 @@ $(document).ready(function() {
 						}
             else{
 							//add tab text container and tab name
+							dataArray.splice(0,1);
             	$('#tabBar').find(".id"+name).append('<div id="tabName">'+tabName+'</div>');
             	//add data result container with class of individual
 							$('#data').append('<div id="dataResult" class="id'+name+'">'+'</div>');
             	var paragraph = $('#data').find(".id"+name);
             	//add headline, download link and data results and hide all tabs
             	$(paragraph).append("<h3>"+tabName+"</h3>");
+							$(paragraph).find("h3").append('<p id="recordCount"> ('+(dataArray.length-1)+' transaction records)</p>');
             	$(paragraph).append('<a href="http://wildfire.codercollective.org/testcampaignfinance/download.cgi?'+formData+'&download=True'+'">Download Data</a>');
-            	dataArray.splice(0,1);
             	d3.select('#data .id'+name)
             	.append('table')
             	.selectAll('tr')
@@ -376,6 +378,7 @@ $(document).ready(function() {
 						}
 						//if new data is not an error
 						else {
+							dataArray.splice(0,1);
 							var paragraph = $('#data').find('#dataResult.id'+name)
 							//but the last data was an error
 							var errorTab =  $('#tabBar').find(".id"+name).children('.error')
@@ -386,7 +389,8 @@ $(document).ready(function() {
 							}
 							$(paragraph).find('table').remove();
 							$(paragraph).find('p').remove();
-							dataArray.splice(0,1);
+							$(paragraph).find('h3').children('p').remove();
+							$(paragraph).find("h3").append('<p id="recordCount"> ('+(dataArray.length-1)+' transaction records)</p>');
 							d3.select('#data .id'+name)
 							.append('table')
             	.selectAll('tr')
