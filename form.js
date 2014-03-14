@@ -77,7 +77,12 @@ $(document).ready(function() {
 				console.log(resultArray);
         for (var i=0; i < resultArray.length; i++) {
          //iterate through results array, add checkbox input with class, add id and committee name data to input , committee information text inside of input
-         committeeArray[i] = '<input class="checkCommittee '+resultArray[i][0]+'" type="checkbox" value="'+resultArray[i][0]+'" data-ID="'+resultArray[i][0]+'" data-committeeName="'+resultArray[i][1]+'" data-cycle="'+resultArray[i][3]+'">'+resultArray[i][1]+", "+resultArray[i][2]+', '+resultArray[i][3]+'</br>';
+					if (resultArray[i][3] !== 0) {
+         	committeeArray[i] = '<input class="checkCommittee '+resultArray[i][0]+'" type="checkbox" value="'+resultArray[i][0]+'" data-ID="'+resultArray[i][0]+'" data-committeeName="'+resultArray[i][1]+'" data-cycle="'+resultArray[i][3]+'">'+resultArray[i][1]+", "+resultArray[i][2]+', '+resultArray[i][3]+'</br>';
+					}
+					else {
+						committeeArray[i] = '<input class="checkCommittee '+resultArray[i][0]+'" type="checkbox" value="'+resultArray[i][0]+'" data-ID="'+resultArray[i][0]+'" data-committeeName="'+resultArray[i][1]+'" data-cycle="NA">'+resultArray[i][1]+'</br>';
+					}
         }
         //append styled array to results paragraph, add button to get rid of checkbox block
         $('#committeeForm').append('<p class="committeeResult">'+committeeArray.join("")+'<button type="button">Remove Results</button></p>');
@@ -164,8 +169,6 @@ $(document).ready(function() {
             $('#results').find("#tabBar").children().removeClass('highlight');
             //if there is not a paragraph with the class of the result committee id
             if (paragraph.length < 1) {
-              //give results to if statement (for some reason it was undefined if I didn't do this again)
-              var dataArray = jQuery.parseJSON(result);
               var committeeID = dataArray[0][0];
               var paragraph = $('#data').find(".id"+committeeID);
               console.log(dataArray);
@@ -185,7 +188,8 @@ $(document).ready(function() {
                 //add error text to tab
                 $('#tabBar').find(".id"+committeeID).append('<div id="tabName" class="error">Error</div>');
                 //set headline so we know which committee selection threw the error
-                $('#data').find(".id"+committeeID).append('<h3>'+committeeName+'</h3>');
+								var cycle = $('#search').children('#committeeForm').find('input.'+committeeID).data();
+                $('#data').find(".id"+committeeID).append('<h3>'+committeeName+' ('+cycle['cycle']+')</h3>');
                 //print out results we did get back since that should contain a detailed error message from cfquery.py
                 $('#data').find(".id"+committeeID).append('<p class="dataResult error">'+dataArray[2]+'</p>');
 							}
@@ -201,7 +205,7 @@ $(document).ready(function() {
                 $('#data').append('<div id="dataResult" class="id'+committeeID+'">'+'</div>');
                 //insert committee name as headline, link for downloading from download.CGI with the same formData, and add results array
 								var cycle = $('#search').children('#committeeForm').find('input.'+committeeID).data();
-                $('#data').find(".id"+committeeID).append('<h3>'+committeeName+' '+cycle['cycle']+'</h3>');
+                $('#data').find(".id"+committeeID).append('<h3>'+committeeName+' ('+cycle['cycle']+')</h3>');
 								$('#data').find(".id"+committeeID).find("h3").append(' <p id="recordCount"> ('+(dataArray.length-1)+' transaction records)</p>');
                 $('#data').find(".id"+committeeID).append('<a href="http://wildfire.codercollective.org/testcampaignfinance/download.cgi?'+formData+'&download=True'+'">Download Data</a>')
                 d3.select('#data .id'+committeeID)
@@ -212,7 +216,8 @@ $(document).ready(function() {
                 .selectAll('td')
                 .data(function(d){return d;})
                 .enter().append("td")
-                .text(function(d) {return d;})
+                .text(function(d) {return d;});
+//								$('#data').find('.id'+committeeID).find('table').children('tr:not(:first)').wrapAll('<div id="tbody"></div>');
               }
             }
             //if this is a duplicated request, ie, there is already a tab with results for the committee in question
