@@ -340,8 +340,6 @@ $(document).ready(function() {
 							//add tab text container and tab name
 							dataArray.splice(0,1);
             	$('#tabBar').find(".id"+name).append('<div id="tabName">'+tabName+'</div>');
-            	//add data result container with class of individual
-							$('#data').append('<div id="dataResult" class="id'+name+'">'+'</div>');
             	var paragraph = $('#data').find(".id"+name);
             	//add headline, download link and data results and hide all tabs
             	$(paragraph).append("<h3>"+tabName+"</h3>");

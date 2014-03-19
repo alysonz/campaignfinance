@@ -20,7 +20,7 @@
 </div>
 <p>
 Select search type:</br>
-<select name="searchType" class="entityVal">
+<select name="searchType" class="entityVal resize">
 <option value="individual">Contributor/Payee</option>
 <option value="race">Race</option>
 <option value="candidate">Candidate</option>
@@ -32,7 +32,7 @@ Select search type:</br>
 <div id="race">
 <p>
 Select race:</br>
-<select name="race">
+<select name="race" class="resize"> 
 <option value="blank">Select Race</option>
 <option value="Governor">Governor</option>
 <option value="Secretary of State">Secretary of State</option>
@@ -127,15 +127,15 @@ Select cycle:</br>
 <div id='candidate'>
 <p>
 Enter partial first and/or last name:</br>
-First:<input type="text" id="firstName" name="firstName"></br>
-Last:<input type="text" id="lastName" name="lastName">
+First:<input class="resize" type="text" id="firstName" name="firstName"></br>
+Last:<input class="resize" type="text" id="lastName" name="lastName">
 </p>
 </div>
 
 <div id='committee'>
 <p>
 Enter partial committee name:</br>
-<input type="text" name="committee">
+<input class="resize" type="text" name="committee">
 </p>
 </div>
 
@@ -158,14 +158,14 @@ Get committee(s) </br>
 <div id="individual">
 <p>
 Enter partial first and/or last name:</br>
-First: <input type="text" name="entityOneFirstName"> </br>
-Last: <input type="text" name="entityOneLastName">
+First: <input class="resize" type="text" name="entityOneFirstName"> </br>
+Last: <input class="resize" type="text" name="entityOneLastName">
 </p>
 </div>
 <div id="refine">
 <p>
 Transaction Type:</br>
-<select name="transactionType">
+<select name="transactionType" class="resize">
 <option value="all" selected>All</option>
 <option value="Income">Income (for the reporting committee)</option>
 <option value="Expense">Expense (for the reporting committee)</option>
@@ -190,9 +190,9 @@ Cycle:</br>
 </br>
 Or enter date range:</br>
 (MM/DD/YYYY)</br>
-<input type="text" name="startDate"></br>
+<input  class="resize" type="text" name="startDate"></br>
 (MM/DD/YYYY)</br>
-<input type="text" name="endDate">
+<input class="resize" type="text" name="endDate">
 </p>
 </div>
 <div id="dataSubmit">
