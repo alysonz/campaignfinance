@@ -111,8 +111,17 @@ td {
 border: 1px solid black;
 padding: 4px;
 font-size: 12px;
+min-width: 40px;
+min-height: 25px;
 }
 
 .resize{
 width: 90%;
+}
+
+#centerSort {
+height: 21px;
+width: 42px;
+margin-left: auto;
+margin-right: auto;
 }

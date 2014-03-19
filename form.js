@@ -6,10 +6,7 @@ $(document).ready(function() {
   if (entitySelection === "individual") {
     //hide all of the committee search option, show only individual
     $("#individual").show();
-    $("#race").hide();
-    $("#candidate").hide();
-    $("#committee").hide();
-    $("#submitSearch").hide();
+    $("#race, #candidate, #committee, #submitSearch").hide();
   }
   $("#entity").on('change', '.entityVal', function() {
     //when the user chooses a new search method, get that selection
@@ -18,37 +15,25 @@ $(document).ready(function() {
     //if race, reset form, show race options, hide all other options
     if (entitySelection === "race") {
       $('#refine').find('form').trigger('reset');
-      $("#race").slideDown("fast");
-      $("#submitSearch").slideDown("fast");
-      $("#candidate").hide();
-      $("#committee").hide();
-      $("#individual").hide();
+      $("#race, #submitSearch").slideDown("fast");
+      $("#candidate, #committee, #individual").hide();
     }
     //if candidate, reset form, show candidate options, hide all other options
     else if (entitySelection === "candidate") {
       $('#refine').find('form').trigger('reset');
-      $("#candidate").slideDown("fast");
-      $("#submitSearch").slideDown("fast");
-      $("#committee").hide();
-      $("#race").hide();
-      $("#individual").hide();
+      $("#candidate, #submitSearch").slideDown("fast");
+      $("#committee, #race, #individual").hide();
     }
     //if committee, reset form, show committee options, hide all other options
     else if (entitySelection === "committee") {
      $('#refine').find('form').trigger('reset');
-     $("#committee").slideDown("fast");
-     $("#submitSearch").slideDown("fast");
-     $("#race").hide();
-     $("#candidate").hide();
-     $("#individual").hide();
+     $("#committee, #submitSearch").slideDown("fast");
+     $("#race, #candidate, #individual").hide();
     }
    //if individual, don't reset form, hide all committee search options, show only individual
    else if (entitySelection === "individual") {
     $("#individual").slideDown("fast");
-    $("#race").hide();
-    $("#submitSearch").hide();
-    $("#candidate").hide();
-    $("#committee").hide();
+    $("#race, #submitSearch, #candidate, #committee").hide();
    } 
   });
   $('#committeeForm').on('submit', 'form',  function(event) {
@@ -59,14 +44,12 @@ $(document).ready(function() {
       data: $(this).serialize(),
       //show working animation
       beforeSend: function() {
-        $('#committeeForm').find('#working').removeClass('hide');
-        $('#committeeForm').find('#working').addClass('show');
+        $('#committeeForm').find('#working').removeClass('hide').addClass('show');
       },
       timeout: 10000,
       //set error message
       error: function (request, errorType, errorMessage) {
-        $('#refine').find('#working').removeClass('show');
-        $('#refine').find('#working').addClass('hide');
+        $('#refine').find('#working').removeClass('show').addClass('hide');
         alert('Error: '+errorType+'. Try narrowing search parameters.');
       },
       success: function(result) {
@@ -89,8 +72,7 @@ $(document).ready(function() {
       },
       //hide working animation when done
       complete: function() {
-        $('#committeeForm').find('#working').removeClass('show');
-        $('#committeeForm').find('#working').addClass('hide');
+        $('#committeeForm').find('#working').removeClass('show').addClass('hide');
       }
     });
   }); 
@@ -148,8 +130,7 @@ $(document).ready(function() {
           data: formData,
           //show working animation
           beforeSend: function() {
-          $('#refine').find('#working').removeClass('hide');
-          $('#refine').find('#working').addClass('show');
+          $('#refine').find('#working').removeClass('hide').addClass('show');
           },
           timeout: 10000,
           //set error message
@@ -176,10 +157,9 @@ $(document).ready(function() {
               $('#tabBar').append('<div id="tab" data-id="'+committeeID+'" class="id'+committeeID+'"></div>');
               //add close tab image to tab container
               $('#tabBar').find(".id"+committeeID).append('<img src="close.png">'); 
-              //if the second list contains only one item, it's an error message
+              $('#data').append('<div id="dataResult" class="id'+committeeID+'">'+'</div>');
+							//if the second list contains only one item, it's an error message
               if (dataArray[2].length < 2) {
-                //so in the main data field, add a containder for the results with the class of the committee id
-                $('#data').append('<div id="dataResult" class="id'+committeeID+'">'+'</div>');
                 var id = dataArray[0][0];
                 //grab data array from the committee result input checkbox with the same committee id
                 var committeeArray = $('.committeeResult').find("."+id).data();
@@ -189,9 +169,7 @@ $(document).ready(function() {
                 $('#tabBar').find(".id"+committeeID).append('<div id="tabName" class="error">Error</div>');
                 //set headline so we know which committee selection threw the error
 								var cycle = $('#search').children('#committeeForm').find('input.'+committeeID).data();
-                $('#data').find(".id"+committeeID).append('<h3>'+committeeName+' ('+cycle['cycle']+')</h3>');
-                //print out results we did get back since that should contain a detailed error message from cfquery.py
-                $('#data').find(".id"+committeeID).append('<p class="dataResult error">'+dataArray[2]+'</p>');
+                $('#data').find(".id"+committeeID).append('<h3>'+committeeName+' ('+cycle['cycle']+')</h3><p class="dataResult error">'+dataArray[2]+'</p>');
 							}
               //if the data does look like it has returned without an 'undefined' error
               else {
@@ -201,13 +179,10 @@ $(document).ready(function() {
                 console.log(dataArray);
                 //set tab to contain committee name 
                 $('#tabBar').find(".id"+committeeID).append('<div id="tabName">'+committeeName+'</div>');
-                //create results container with id of committee
-                $('#data').append('<div id="dataResult" class="id'+committeeID+'">'+'</div>');
                 //insert committee name as headline, link for downloading from download.CGI with the same formData, and add results array
 								var cycle = $('#search').children('#committeeForm').find('input.'+committeeID).data();
-                $('#data').find(".id"+committeeID).append('<h3>'+committeeName+' ('+cycle['cycle']+')</h3>');
+                $('#data').find(".id"+committeeID).append('<h3>'+committeeName+' ('+cycle['cycle']+')</h3><a href="http://wildfire.codercollective.org/testcampaignfinance/download.cgi?'+formData+'&download=True'+'">Download Data</a>');
 								$('#data').find(".id"+committeeID).find("h3").append(' <p id="recordCount"> ('+(dataArray.length-1)+' transaction records)</p>');
-                $('#data').find(".id"+committeeID).append('<a href="http://wildfire.codercollective.org/testcampaignfinance/download.cgi?'+formData+'&download=True'+'">Download Data</a>')
                 d3.select('#data .id'+committeeID)
                 .append('table')
                 .selectAll('tr')
@@ -217,13 +192,18 @@ $(document).ready(function() {
                 .data(function(d){return d;})
                 .enter().append("td")
                 .text(function(d) {return d;});
-//								$('#data').find('.id'+committeeID).find('table').children('tr:not(:first)').wrapAll('<div id="tbody"></div>');
+								$('#data').find(".id"+committeeID).find('table').find('tr').first().wrap('<thead></thead>');
+								$('#data').find(".id"+committeeID).find('table').find('thead').prepend('<tr class="sort"></tr>')
+								for (var i=0; i < dataArray[0].length; i++) {
+									$('#data').find(".id"+committeeID).find('table').find('.sort').append('<td><div id="centerSort"><img id="sortUp" src="arrow-right-2.png"><img id="sortDown" src="arrow-left-2.png"></div></td>');
+								}
               }
             }
             //if this is a duplicated request, ie, there is already a tab with results for the committee in question
             else {
               var dataArray = jQuery.parseJSON(result);
               var committeeID = dataArray[0][0];
+							$('#data').children('.id'+committeeID).find('table, a, p').remove();
               //if the duplication is now an error
               if (dataArray[2].length < 2) {
                 //if the old tab did not have error text, replace text with error
@@ -231,10 +211,6 @@ $(document).ready(function() {
                   $('#tabBar').find(".id"+committeeID).find("#tabName").remove();
                   $('#tabBar').find(".id"+committeeID).append('<div id="tabName" class="error">Error</div>');
                 }
-                //leave headline in place but remove download link and data results
-                $('#data').children('.id'+committeeID).children('table').remove();
-                $('#data').children('.id'+committeeID).children('a').remove();
-								$('#data').children('.id'+committeeID).find('h3').find('p').remove();
                 //replace data results with error message from cfquery.py
                 $('#data').find(".id"+committeeID).append('<p class="dataResult error">'+dataArray[2]+'</p>');
               }
@@ -247,13 +223,11 @@ $(document).ready(function() {
                 //replace error text with the committee name
                 $('#tabBar').find(".id"+committeeID).find("#tabName").remove();
                 $('#tabBar').find(".id"+committeeID).append('<div id="tabName">'+committeeName+'</div>');
-                $('#data').children('.id'+committeeID).children('p').remove();
-								$('#data').find(".id"+committeeID).append('<a href="http://wildfire.codercollective.org/testcampaignfinance/download.cgi?'+formData+'&download=True'+'">Download Data</a>')
-              }
-							$('#data').children('.id'+committeeID).find('h3').children('p').remove();
+ //               $('#data').children('.id'+committeeID).children('p').remove();
+							}
+							$('#data').find(".id"+committeeID).append('<a href="http://wildfire.codercollective.org/testcampaignfinance/download.cgi?'+formData+'&download=True'+'">Download Data</a>')
 							$('#data').children('.id'+committeeID).find('h3').append(' <p id="recordCount"> ('+(dataArray.length-1)+' transaction records)</p>');
               //replace old results with new results
-              $('#data').children('.id'+committeeID).children('table').remove();
               d3.select('#data .id'+committeeID)
               .append('table')
               .selectAll('tr')
@@ -262,17 +236,15 @@ $(document).ready(function() {
               .selectAll('td')
               .data(function(d){return d;})
               .enter().append("td")
-              .text(function(d) {return d;})
+              .text(function(d) {return d;});
               }
             }
           },
           //remove working animation, remove selected styling from everything, add selected styling to first tab and corresponding data result
           complete: function () {
-            $('#refine').find('#working').removeClass('show');
-            $('#refine').find('#working').addClass('hide');
+            $('#refine').find('#working').removeClass('show').addClass('hide');
             $('#results').find('#data').children().addClass('hide');
-            $('#results').find('#dataResult').removeClass('hide');
-            $('#results').find('#dataResult').addClass('show');
+            $('#results').find('#dataResult').removeClass('hide').addClass('show');
             $('#results').find("#tab").addClass('highlight');
           }
         });
@@ -296,14 +268,12 @@ $(document).ready(function() {
         data: formData,
         //add working animation
         beforeSend: function() {
-        $('#refine').find('#working').removeClass('hide');
-        $('#refine').find('#working').addClass('show');
+        $('#refine').find('#working').removeClass('hide').addClass('show');
         },
         timeout: 10000,
         //add error message for timeout
         error: function (request, errorType, errorMessage) {
-          $('#refine').find('#working').removeClass('show');
-          $('#refine').find('#working').addClass('hide');
+          $('#refine').find('#working').removeClass('show').addClass('hide');
           alert('Error: '+errorType+'. Try narrowing search parameters.');
         },
         success: function(result) {
@@ -333,8 +303,7 @@ $(document).ready(function() {
 						if (dataArray[2].length < 2) {
 							$('#tabBar').find(".id"+name).append('<div id="tabName" class="error">Error</div>');
 							var paragraph = $('#data').find(".id"+name);
-							$(paragraph).append("<h3>"+tabName+"</h3>");
-							$(paragraph).append('<p class="error">'+dataArray[2][0]+'</p>');
+							$(paragraph).append("<h3>"+tabName+'</h3><p class="error">'+dataArray[2][0]+'</p>');
 						}
             else{
 							//add tab text container and tab name
@@ -342,9 +311,8 @@ $(document).ready(function() {
             	$('#tabBar').find(".id"+name).append('<div id="tabName">'+tabName+'</div>');
             	var paragraph = $('#data').find(".id"+name);
             	//add headline, download link and data results and hide all tabs
-            	$(paragraph).append("<h3>"+tabName+"</h3>");
+            	$(paragraph).append('<h3>'+tabName+'</h3><a href="http://wildfire.codercollective.org/testcampaignfinance/download.cgi?'+formData+'&download=True'+'">Download Data</a>');
 							$(paragraph).find("h3").append('<p id="recordCount"> ('+(dataArray.length-1)+' transaction records)</p>');
-            	$(paragraph).append('<a href="http://wildfire.codercollective.org/testcampaignfinance/download.cgi?'+formData+'&download=True'+'">Download Data</a>');
             	d3.select('#data .id'+name)
             	.append('table')
             	.selectAll('tr')
@@ -363,8 +331,7 @@ $(document).ready(function() {
             var name = dataArray[0][0]+ dataArray[0][1];
 						var tabName = dataArray[0][0]+' '+ dataArray[0][1];
             //remove existing data from results container and replace with new results
-            $('#data').children('.id'+name).children('table').remove();
-						$('#data').children('.id'+name).children('p').remove();
+            $('#data').children('.id'+name).find('table, p, a').remove();
 						//if the new data contains an error
 						if (dataArray[2].length < 2) {
 							//and the previous tab was not an error
@@ -373,9 +340,6 @@ $(document).ready(function() {
 								$('#tabBar').find(".id"+name).find("#tabName").remove();
 								$('#tabBar').find(".id"+name).append('<div id="tabName" class="error">Error</div>');
 							}
-							$('#data').find('#dataResult.id'+name).find('a').remove();
-							$('#data').find('#dataResult.id'+name).find('table').remove();
-							$('#data').find('#dataResult.id'+name).find('p').remove();
 							var paragraph = $('#data').find(".id"+name);
 							$(paragraph).append('<p class="error">'+dataArray[2][0]+'</p>');
 						}
@@ -388,12 +352,9 @@ $(document).ready(function() {
 							if (errorTab.length > 0) {
 								$('#tabBar').find(".id"+name).find(".error").remove()
 								$('#tabBar').find(".id"+name).append('<div id="tabName">'+tabName+'</div>');
-								$(paragraph).append('<a href="http://wildfire.codercollective.org/testcampaignfinance/download.cgi?'+formData+'&download=True'+'">Download Data</a>');
 							}
-							$(paragraph).find('table').remove();
-							$(paragraph).find('p').remove();
-							$(paragraph).find('h3').children('p').remove();
 							$(paragraph).find("h3").append('<p id="recordCount"> ('+(dataArray.length-1)+' transaction records)</p>');
+							$(paragraph).append('<a href="http://wildfire.codercollective.org/testcampaignfinance/download.cgi?'+formData+'&download=True'+'">Download Data</a>');
 							d3.select('#data .id'+name)
 							.append('table')
             	.selectAll('tr')
@@ -408,11 +369,9 @@ $(document).ready(function() {
         },
         //remove working animation, hide all tabs, show first tab and first data result
         complete: function() {
-          $('#refine').find('#working').removeClass('show');
-          $('#refine').find('#working').addClass('hide');
+          $('#refine').find('#working').removeClass('show').addClass('hide');
           $('#results').find('#data').children().addClass('hide');
-          $('#results').find('#dataResult').removeClass('hide');
-          $('#results').find('#dataResult').addClass('show');
+          $('#results').find('#dataResult').removeClass('hide').addClass('show');
           $('#results').find("#tab").addClass('highlight');
         }
       });
@@ -427,12 +386,10 @@ $(document).ready(function() {
     $('#tabBar').children().removeClass('highlight');
     //add highlighted to the tab that was clicked
     $(this).closest("#tab").addClass('highlight');
-    //remove the show class from all results, add hide to all results
-    $('#results').find('#data').children().removeClass('show');
-    $('#results').find('#data').children().addClass('hide');
+    //remove the show class where it exists and add hide
+    $('#results').find('#data').children('.show').removeClass('show').addClass('hide');
     //remove hide from the results with class matching tab data and add show
-    $('#data').find(".id"+committeeData["id"]).removeClass('hide');
-    $('#data').find(".id"+committeeData["id"]).addClass('show'); 
+    $('#data').find(".id"+committeeData["id"]).removeClass('hide').addClass('show');
   });
   //on clicking the close image in the tab
   $('#tabBar').on('click', 'img',  function () {
@@ -449,8 +406,7 @@ $(document).ready(function() {
       //remove tab and corresponding data result, highligh first tab and show first data result
       $(this).closest('#tab').remove();
       $('#data').find(".id"+committeeData["id"]).remove();
-      $('#data').find('#dataResult').removeClass('hide');
-      $('#data').find('#dataResult').addClass('show');
+      $('#data').find('#dataResult').removeClass('hide').addClass('show');
       $('#tabBar').find("#tab").addClass('highlight');
     }
   });  
@@ -459,19 +415,23 @@ $(document).ready(function() {
 		type = $(this).data();
 		if (type['type'] === 'min') {
 			$(this).parent().append('<img class="min" data-type="max" src="arrow-right-2.png">');
-			$(this).closest('#search').children('#committeeForm, #refine').removeClass('show');
-			$(this).closest('#search').children('#committeeForm, #refine').addClass('hide');
+			$(this).closest('#search').children('#committeeForm, #refine').removeClass('show').addClass('hide');
 			$(this).closest('#search').removeClass('searchMax').addClass('searchMin');
 			$('#results').removeClass('resultsMin').addClass('resultsMax');
 			$(this).remove();
 		}
 		else {
 			$(this).parent().append('<img class="min" data-type="min" src="arrow-left-2.png">');
-			$(this).closest('#search').children('#committeeForm, #refine').removeClass('hide');
-			$(this).closest('#search').children('#committeeForm, #refine').addClass('show');
+			$(this).closest('#search').children('#committeeForm, #refine').removeClass('hide').addClass('show');
 			$(this).closest('#search').removeClass('searchMin').addClass('searchMax');
 			$('#results').removeClass('resultsMax').addClass('resultsMin');
 			$(this).remove();
 		}
 	});
+
+	//sort
+//	$('#results').find('table').find('thead').find('.sort').find('#center').on('click', '#sortUp', function () {
+	//	var resultTable = tabulate(
+//	});
+
 });
