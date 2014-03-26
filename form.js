@@ -46,7 +46,7 @@ $(document).ready(function() {
       beforeSend: function() {
         $('#committeeForm').find('#working').removeClass('hide').addClass('show');
       },
-      timeout: 10000,
+      timeout: 20000,
       //set error message
       error: function (request, errorType, errorMessage) {
         $('#refine').find('#working').removeClass('show').addClass('hide');
@@ -132,7 +132,7 @@ $(document).ready(function() {
           beforeSend: function() {
           $('#refine').find('#working').removeClass('hide').addClass('show');
           },
-          timeout: 10000,
+          timeout: 20000,
           //set error message
           error: function (request, errorType, errorMessage) {
             alert('Error: '+errorType+'. Try narrowing search parameters.');
@@ -270,7 +270,7 @@ $(document).ready(function() {
         beforeSend: function() {
         $('#refine').find('#working').removeClass('hide').addClass('show');
         },
-        timeout: 10000,
+        timeout: 20000,
         //add error message for timeout
         error: function (request, errorType, errorMessage) {
           $('#refine').find('#working').removeClass('show').addClass('hide');
