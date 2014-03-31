@@ -12,8 +12,16 @@ from storm.locals import *
 from storm.tracer import debug
 import sys
 import json
-database = create_database("mysql://%s:%s@localhost/%s"%(db_user, db_pass, db_db))
 
+
+
+#Database connection
+database = create_database("mysql://%s:%s@localhost/%s"%(db_user, db_pass, db_db))
+store = Store(database)
+
+
+
+#Classes
 class Names(object):
 	__storm_table__ = "names"
 	nameID = Int(primary=True)
@@ -97,7 +105,7 @@ class Committees(object):
 	financialInstitution2 = Unicode()
 	financialInstitution3 = Unicode()
 	partyName = Unicode()
-	officName = Unicode()
+	officeName = Unicode()
 	countyName = Unicode()
 	candidateIsIncumbent = Unicode()
 	cycleName = Int()
@@ -111,21 +119,104 @@ class Committees(object):
 	cycleEndDay = Int()
 	candidateOtherPartyName = Unicode()
 
-store = Store(database)
 
-last = "asdfg"
-first = ""
-getname = store.find(Names, Names.lastName.like(u"%%%s%%"%(last)), Names.firstName.like(u"%%%s%%"%(first)))
 
-report = []
+headers = ["Transaction Date","Committee Type", "Committee Name", "Candidate First Name", "Candidate Last Name", "Party", "Office", "Transaction Amount", "Transaction Type", "Transaction Memo", "Transaction Category", "Contributor/Payee Type", "C/P First Name", "C/P Last Name", "C/P Middle Name", "C/P Suffix", "C/P Address", "C/P City", "C/P State", "C/P Zipcode", "C/P Occupation", "C/P Employer"]
 
-if getname.count > 1:
-	for line in getname:
-		gettransactions = store.find(Transactions, Transactions.nameID==line.nameID)
-		for item in gettransactions:
-			getcommittee = store.find(Names, Names.nameID==item.committeeID)
-#		record = [line.entityTypeName, line.firstName, line.lastName, line.middleName, line.suffix, line.address1, line.address2, line.city, line.state, line.zipcode, line.occupation, line.employer, getcommittee.lastName, 
-else:
-	report = [["Individual not found"]]
 
-test = store.find(Names, Names.lastName==u'mcdermott')
+
+#Queries
+def committeeQuery(committeeID):
+	committeeID = int(committeeID)
+	report = []
+	getCommittee = store.find(Committees, Committees.committeeID == committeeID)
+	getCandidate = store.find(Names, Names.nameID == getCommittee[0].candidateNameID)
+	getCommitteeName = store.find(Names, Names.nameID == getCommittee[0].nameID)
+	getTransactions = store.find(Transactions, Transactions.committeeID == getCommittee[0].committeeID)
+	for transaction in getTransactions:
+		getContributor = store.find(Names, Names.nameID == transaction.nameID)
+		record = [transaction.unixTransactionDate, getCommitteeName[0].entityTypeName, getCommitteeName[0].lastName, getCandidate[0].firstName, getCandidate[0].lastName, getCommittee[0].partyName, getCommittee[0].officeName, transaction.amount, transaction.incomeExpenseNeutral, transaction.memo, transaction.categoryName, getContributor[0].entityTypeName, getContributor[0].firstName, getContributor[0].lastName, getContributor[0].middleName, getContributor[0].suffix, getContributor[0].address1 + " " + getContributor[0].address2, getContributor[0].city, getContributor[0].state, getContributor[0].zipcode, getContributor[0].occupation, getContributor[0].employer]
+		report.append(record)
+	return report
+
+
+
+def individualQuery(lastName, firstName):
+	report = []
+	getName = store.find(Names, Names.lastName.like(u"%%%s%%"%(lastName)), Names.firstName.like(u"%%%s%%"%(firstName)))
+	if getName.count() > 0:
+		for line in getName:
+			getTransactions = store.find(Transactions, Transactions.nameID==line.nameID)
+			if getTransactions.count() > 0:
+				for transaction in getTransactions:
+					getCommittee = store.find(Committees, Committees.committeeID == transaction.committeeID)
+					getCandidate = store.find(Names, Names.nameID == getCommittee[0].candidateNameID)
+					getCommitteeName = store.find(Names, Names.nameID == getCommittee[0].nameID)
+					record = [transaction.unixTransactionDate, getCommitteeName[0].lastName, getCandidate[0].firstName, getCandidate[0].lastName, getCommittee[0].partyName, getCommittee[0].officeName, transaction.amount, transaction.incomeExpenseNeutral, transaction.memo, transaction.categoryName, line.entityTypeName, line.firstName, line.lastName, line.middleName, line.suffix, line.address1 + " " + line.address2, line.city, line.state, line.zipcode, line.occupation, line.employer]
+					report.append(record)
+	else:
+		report.append(["Individual not found"])
+	return report
+
+
+
+#Filters
+def convertDate(report):
+	try:
+		for line in report:
+			line[0] = datetime.fromtimestamp(line[0]).strftime('%m-%d-%Y')
+		report.insert(0, headers)
+	except (TypeError):
+		pass
+	return report
+
+
+
+def cycle(cycle, report):
+	cycle = int(cycle)
+	reportFiltered = []
+	cycleRange = store.find(Cycles, Cycles.cycleName == cycle)
+	for line in report:
+		if line[0] >= unixCycleBeginDate and line[0] <= unixCycleEndDate:
+			reportFiltered.append(line)
+	if len(reportFiltered) < 1:
+		return reportFiltered
+	else:
+		reportFiltered = [["No records exist for cycle provided."]]
+		return reportFiltered
+
+
+
+def date(date, dateType, report):
+	reportFiltered = []
+	if date:
+		date = date.split("/")
+		if len(date[2]) != 4:
+			reportFiltered = [["Invalid date format."]]
+		try:
+			unixDate = datetime(int(date[2]),int(date[0]),int(date[1]),0,0)
+			unixDate = calendar.timegm(unixDate.utctimetuple())
+			for line in report:
+				if (dateType == "begin") and (line[0] >= unixDate):
+						reportFiltered.append(line)
+				elif dateType == "end" and (line[0] <= unixDate):
+						reportFiltered.append(line)
+		except (IndexError):
+			reportFiltered = [["Invalid date format."]]
+	if len(reportFiltered) < 1:
+		reportFiltered = [["No records exist for date range provided."]]
+	return reportFiltered
+
+
+
+def incomeExpense(transactionType, report):
+	reportFiltered = []
+	for line in report:
+		if line[8] == transactionType:
+			reportFiltered.append(line)
+	if len(reportFiltered) < 1:
+		reportFiltered = [["No %s transactions exist."%(transactionType)]]
+	return reportFiltered
+
+
+

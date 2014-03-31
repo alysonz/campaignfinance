@@ -174,7 +174,7 @@ $(document).ready(function() {
               //if the data does look like it has returned without an 'undefined' error
               else {
                 //set committee name from results
-								var committeeName = dataArray[2][1];
+								var committeeName = dataArray[2][2];
 								dataArray.splice(0,1);
                 console.log(dataArray);
                 //set tab to contain committee name 
@@ -216,7 +216,7 @@ $(document).ready(function() {
               }
               //if results are not an error
               else {
-              var committeeName = dataArray[2][1];
+              var committeeName = dataArray[2][2];
 							dataArray.splice(0,1);
               //but the previous results /were/ an error
               if(($('#tabBar').find(".id"+committeeID).find(".error")).length > 0) {

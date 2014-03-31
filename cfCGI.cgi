@@ -4,6 +4,8 @@ import cgi
 import cgitb
 import cfquery
 import json
+from cfstorm import *
+
 def log(message):
 	file = open("/var/log/apache2/alyson.log","a")
 	file.write(message)
@@ -39,7 +41,33 @@ if startDate:
 endDate = form.getvalue('endDate' ,False)
 if endDate:
 	endDate = cgi.escape(endDate)
-report = cfquery.getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastName, cycleName, transactionType, startDate, endDate, download)
+
+#get report
+if committeeNameID:
+	report = committeeQuery(committeeNameID)
+else:
+	report = individualQuery(entityOneLastName, entityOneFirstName)
+
+#filter
+if cycleName != "All":
+	report = cycle(cycleName, report)
+if transactionType != "All":
+	report = incomeExpense(transactionType, report)
+if startDate:
+	report = date(startDate, "begin", report)
+if endDate:
+	report = date(endDate, "end", report)
+
+#finalize
+report = convertDate(report)
+if committeeNameID:
+	report.insert(0,[committeeNameID])
+else:
+	report.insert(0, [entityOneFirstName,entityOneLastName])
+
+
+#report = cfquery.getreport(committeeNameID, entityOneType, entityOneFirstName, entityOneLastName, cycleName, transactionType, startDate, endDate, download)
+
 #begin web content
 print "content-type:text/html"
 print
