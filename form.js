@@ -194,9 +194,6 @@ $(document).ready(function() {
                 .text(function(d) {return d;});
 								$('#data').find(".id"+committeeID).find('table').find('tr').first().wrap('<thead></thead>');
 								$('#data').find(".id"+committeeID).find('table').find('thead').prepend('<tr class="sort"></tr>')
-								for (var i=0; i < dataArray[0].length; i++) {
-									$('#data').find(".id"+committeeID).find('table').find('.sort').append('<td><div id="centerSort"><img id="sortUp" src="arrow-right-2.png"><img id="sortDown" src="arrow-left-2.png"></div></td>');
-								}
               }
             }
             //if this is a duplicated request, ie, there is already a tab with results for the committee in question

@@ -152,7 +152,7 @@ def individualQuery(lastName, firstName):
 					getCommittee = store.find(Committees, Committees.committeeID == transaction.committeeID)
 					getCandidate = store.find(Names, Names.nameID == getCommittee[0].candidateNameID)
 					getCommitteeName = store.find(Names, Names.nameID == getCommittee[0].nameID)
-					record = [transaction.unixTransactionDate, getCommitteeName[0].lastName, getCandidate[0].firstName, getCandidate[0].lastName, getCommittee[0].partyName, getCommittee[0].officeName, transaction.amount, transaction.incomeExpenseNeutral, transaction.memo, transaction.categoryName, line.entityTypeName, line.firstName, line.lastName, line.middleName, line.suffix, line.address1 + " " + line.address2, line.city, line.state, line.zipcode, line.occupation, line.employer]
+					record = [transaction.unixTransactionDate, getCommitteeName[0].entityTypeName, getCommitteeName[0].lastName, getCandidate[0].firstName, getCandidate[0].lastName, getCommittee[0].partyName, getCommittee[0].officeName, transaction.amount, transaction.incomeExpenseNeutral, transaction.memo, transaction.categoryName, line.entityTypeName, line.firstName, line.lastName, line.middleName, line.suffix, line.address1 + " " + line.address2, line.city, line.state, line.zipcode, line.occupation, line.employer]
 					report.append(record)
 	else:
 		report.append(["Individual not found"])
@@ -177,7 +177,7 @@ def cycle(cycle, report):
 	reportFiltered = []
 	cycleRange = store.find(Cycles, Cycles.cycleName == cycle)
 	for line in report:
-		if line[0] >= unixCycleBeginDate and line[0] <= unixCycleEndDate:
+		if line[0] >= cycleRange[0].unixCycleBeginDate and line[0] <= cycleRange[0].unixCycleEndDate:
 			reportFiltered.append(line)
 	if len(reportFiltered) < 1:
 		return reportFiltered
