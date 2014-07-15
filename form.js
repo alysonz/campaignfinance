@@ -39,7 +39,8 @@ $(document).ready(function() {
   $('#committeeForm').on('submit', 'form',  function(event) {
   //when the user submits a committee search
     event.preventDefault();
-    $.ajax("name.cgi", {
+		console.log($(this).serialize());
+    $.ajax("nameCGI.cgi", {
       type: 'POST',
       data: $(this).serialize(),
       //show working animation
