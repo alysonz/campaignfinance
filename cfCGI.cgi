@@ -11,16 +11,21 @@ def log(message):
 	file.write("\n")
 	file.close()
 
+report = 0
+
 #get form variables
 form = cgi.FieldStorage()
 
-download = form.getvalue('download' ,False)
+download = form.getvalue('download', False)
 if download:
 	download = cgi.escape(download)
 
 committeeID = form.getlist('committeeID')
+for committee in committeeID:
+	if committee:
+		committee = cgi.escape(committee)
 
-entityOneType = form.getvalue('entityOneType' ,False)
+entityOneType = form.getvalue('entityOneType', False)
 if entityOneType:
 	entityOneType = cgi.escape(entityOneType)
 
@@ -73,7 +78,7 @@ report = convertDate(report)
 print 'Content-Type: application/json\n\n'
 print
 #print contents of report
-print json.dumps(committeeID);
+print json.dumps(report);
 if entityOneType == "blank":
 	if len(report) > 0:
 		print json.dumps(report)

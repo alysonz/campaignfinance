@@ -413,14 +413,14 @@ $(document).ready(function() {
 		type = $(this).data();
 		if (type['type'] === 'min') {
 			$(this).parent().append('<img class="min" data-type="max" src="arrow-right-2.png">');
-			$(this).closest('#search').children('#committeeForm, #refine').removeClass('show').addClass('hide');
+			$(this).closest('#search').children('#committeeForm, #dataSearch').removeClass('show').addClass('hide');
 			$(this).closest('#search').removeClass('searchMax').addClass('searchMin');
 			$('#results').removeClass('resultsMin').addClass('resultsMax');
 			$(this).remove();
 		}
 		else {
 			$(this).parent().append('<img class="min" data-type="min" src="arrow-left-2.png">');
-			$(this).closest('#search').children('#committeeForm, #refine').removeClass('hide').addClass('show');
+			$(this).closest('#search').children('#committeeForm, #dataSearch').removeClass('hide').addClass('show');
 			$(this).closest('#search').removeClass('searchMin').addClass('searchMax');
 			$('#results').removeClass('resultsMax').addClass('resultsMin');
 			$(this).remove();

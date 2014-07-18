@@ -67,6 +67,32 @@ $(document).ready(function() {
 		dataType: 'json',
 		success: function(result) {
 			console.log(result);
+			var tabTemplate = "<li><a href='#{href}'>#{label}</a> <span class='ui-icon-close' role='presentation'><img src='close.png'></span></li>"
+			var tabs = $("#tabs").tabs()
+			//jquery-ui tabs
+			$.each(result, function(index, committee) {
+			var label = committee['committeeName'],
+				id = "tabs-"+committee['committeeID'],
+				li = $( tabTemplate.replace( /#\{href\}/g, "#" + id ).replace( /#\{label\}/g, label ) );
+				if ($('#'+id).length) {
+					$('#'+id).children().remove();
+				}
+				else {
+					tabs.find( ".ui-tabs-nav" ).append(li);
+					tabs.append( "<div id='" + id + "'></div>" );
+					tabs.tabs( "refresh" );
+				}
+			//generate table
+			d3.select('#'+id)
+			.append('table')
+			.selectAll('tr')
+			.data(committee['transactions'])
+			.enter().append('tr')
+			.selectAll('td')
+			.data(function(d){return d;})
+			.enter().append("td")
+			.text(function(d) {return d;});
+			});
 		},
 		beforeSend: function() {
 			working.show();
@@ -76,4 +102,39 @@ $(document).ready(function() {
 		}
 		});
 	});
+
+	//remove tabs
+	var tabs = $("#tabs").tabs()
+	tabs.delegate( "span.ui-icon-close", "click", function() {
+		var panelId = $( this ).closest( "li" ).remove().attr( "aria-controls" );
+		$( "#" + panelId ).remove();
+		tabs.tabs( "refresh" );
+	});
+	tabs.bind( "keyup", function( event ) {
+		if ( event.altKey && event.keyCode === $.ui.keyCode.BACKSPACE ) {
+			var panelId = tabs.find( ".ui-tabs-active" ).remove().attr( "aria-controls" );
+			$( "#" + panelId ).remove();
+			tabs.tabs( "refresh" );
+		}
+	});
+
+	//minimize search
+	$('#min').on('click', 'img', function() {
+		type = $(this).data();
+		if (type['type'] === 'min') {
+			$('#min').append('<img class="min" data-type="max" src="arrow-right-2.png">');
+			$('#committeeForm, #dataSearch').hide();
+			$('#search').removeClass('searchMax').addClass('searchMin');
+			$('#results').removeClass('resultsMin').addClass('resultsMax');
+			$(this).remove();
+		}
+		else {
+			$('#min').append('<img class="min" data-type="min" src="arrow-left-2.png">');
+			$('#committeeForm, #dataSearch').show()
+			$('#search').removeClass('searchMin').addClass('searchMax');
+			$('#results').removeClass('resultsMax').addClass('resultsMin');
+			$(this).remove();
+		}
+	});
+
 });
