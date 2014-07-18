@@ -1,11 +1,13 @@
 <html>
 <head>
 <link rel="stylesheet" href="cfStyle.css"/>
+<link rel="stylesheet" href="jquery-ui-1.11.0.custom/jquery-ui.css">
+<script src="jquery.js"></script>
+<script src="jquery-ui-1.11.0.custom/jquery-ui.js"></script>
+<script src="http://mbostock.github.com/d3/d3.js"></script>
+<script src="main.js"></script>
 </head>
 <body>
-<script src="jquery.js"></script>
-<script src="http://mbostock.github.com/d3/d3.js"></script>
-<script src="form.js"></script>
 <div id="main">
 <div id='search' class="searchMax">
 <div id='min'>
@@ -153,7 +155,7 @@ Get committee(s) </br>
 </div>
 
 
-<div id='refine'>
+<div id='dataSearch'>
 <form action="cfCGI.cgi" method="get">
 <div id="individual">
 <p>
@@ -209,10 +211,12 @@ Or enter date range:</br>
 </div> <!--search div-->
 <div id="results" class="resultsMin">
 <div id="tabBar">
+<div id="tabs">
+<ul>
+</ul>
+</div>
 </div> <!--tabBar div-->
-<div id="data">
-</div> <!--data div-->
 </div> <!--results div-->
 </div> <!--main div--> 
 </body>
-</html>
+</etml>

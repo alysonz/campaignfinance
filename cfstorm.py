@@ -4,8 +4,6 @@ import MySQLdb
 import re
 from datetime import datetime
 import calendar
-from gettuple import gettuple
-from gettuple import getlist
 import os
 from parms import *
 from storm.locals import *
@@ -123,26 +121,87 @@ class Committees(object):
 
 headers = ["Transaction Date","Committee Type", "Committee Name", "Candidate First Name", "Candidate Last Name", "Party", "Office", "Transaction Amount", "Transaction Type", "Transaction Memo", "Transaction Category", "Contributor/Payee Type", "C/P First Name", "C/P Last Name", "C/P Middle Name", "C/P Suffix", "C/P Address", "C/P City", "C/P State", "C/P Zipcode", "C/P Occupation", "C/P Employer"]
 
-
+def compileRow(committeeObject):
+	getCommitteeName = store.find(Names, Names.nameID == committeeObject.nameID)
+	getCandidate = store.find(Names, Names.nameID == committeeObject.candidateNameID)
+	candidateName = getCandidate[0].firstName + ' ' + getCandidate[0].lastName
+	record = {'committeeID': committeeObject.committeeID, 'committeeName': getCommitteeName[0].lastName, 'candidateName': candidateName,  'cycle': committeeObject.cycleName}
+	return record
 
 #Queries
-def committeeQuery(committeeID):
-	committeeID = int(committeeID)
+
+#queryBy
+def queryByRace(race, cycleName):
+	race = unicode(race)
+	cycleName = int(cycleName)
 	report = []
-	getCommittee = store.find(Committees, Committees.committeeID == committeeID)
-	getCandidate = store.find(Names, Names.nameID == getCommittee[0].candidateNameID)
-	getCommitteeName = store.find(Names, Names.nameID == getCommittee[0].nameID)
-	getTransactions = store.find(Transactions, Transactions.committeeID == getCommittee[0].committeeID)
-	for transaction in getTransactions:
-		getContributor = store.find(Names, Names.nameID == transaction.nameID)
-		record = [transaction.unixTransactionDate, getCommitteeName[0].entityTypeName, getCommitteeName[0].lastName, getCandidate[0].firstName, getCandidate[0].lastName, getCommittee[0].partyName, getCommittee[0].officeName, transaction.amount, transaction.incomeExpenseNeutral, transaction.memo, transaction.categoryName, getContributor[0].entityTypeName, getContributor[0].firstName, getContributor[0].lastName, getContributor[0].middleName, getContributor[0].suffix, getContributor[0].address1 + " " + getContributor[0].address2, getContributor[0].city, getContributor[0].state, getContributor[0].zipcode, getContributor[0].occupation, getContributor[0].employer]
-		report.append(record)
-	return report
+	getCommittees = store.find(Committees, Committees.officeName == race, Committees.cycleName == cycleName)
+	for committee in getCommittees:
+		report.append(compileRow(committee))
+	if len(report) > 0:
+		return report
+	else:
+		report = False
+		return report
+
+
+
+def queryByCandidate(firstName, lastName):
+	report = []
+	getNames = store.find(Names, Names.lastName.like(u"%%%s%%"%(lastName)), Names.firstName.like(u"%%%s%%"%(firstName)))
+	for name in getNames:
+		getCommittee = store.find(Committees, Committees.candidateNameID == name.nameID)
+		try:
+			report.append(compileRow(getCommittee[0]))
+		except IndexError:
+			pass
+	if len(report) > 0:
+		return report
+	else:
+		report = False
+		return report
+
+
+
+def queryByCommittee(committee):
+	report = []
+	getNames = store.find(Names, Names.lastName.like(u"%%%s%%"%(committee)))
+	for name in getNames:
+		getCommittee = store.find(Committees, Committees.nameID == name.nameID)
+		try:
+			report.append(compileRow(getCommittee[0]))
+		except IndexError:
+			pass
+	if len(report) > 0:
+		return report
+	else:
+		report = False
+		return report
+
+
+
+#getData
+def committeeQuery(committeeID):
+	request = []
+	for committee in committeeID:
+		committee = int(committee)
+		getCommittee = store.find(Committees, Committees.committeeID == committee)
+		getCandidate = store.find(Names, Names.nameID == getCommittee[0].candidateNameID)
+		getCommitteeName = store.find(Names, Names.nameID == getCommittee[0].nameID)
+		getTransactions = store.find(Transactions, Transactions.committeeID == getCommittee[0].committeeID)
+		report = {'committeeID': getCommittee[0].committeeID, 'committeeName': getCommitteeName[0].lastName, 'transactions': []}
+		for transaction in getTransactions:
+			getContributor = store.find(Names, Names.nameID == transaction.nameID)
+			record = [transaction.unixTransactionDate, getCommitteeName[0].entityTypeName, getCommitteeName[0].lastName, getCandidate[0].firstName, getCandidate[0].lastName, getCommittee[0].partyName, getCommittee[0].officeName, transaction.amount, transaction.incomeExpenseNeutral, transaction.memo, transaction.categoryName, getContributor[0].entityTypeName, getContributor[0].firstName, getContributor[0].lastName, getContributor[0].middleName, getContributor[0].suffix, getContributor[0].address1 + " " + getContributor[0].address2, getContributor[0].city, getContributor[0].state, getContributor[0].zipcode, getContributor[0].occupation, getContributor[0].employer]
+			report['transactions'].append(record)
+		request.append(report)
+	return request
 
 
 
 def individualQuery(lastName, firstName):
-	report = []
+	request = []
+	report = {'committeeID': firstName+lastName, 'committeeName': firstName+' '+lastName, 'transactions': []}
 	getName = store.find(Names, Names.lastName.like(u"%%%s%%"%(lastName)), Names.firstName.like(u"%%%s%%"%(firstName)))
 	if getName.count() > 0:
 		for line in getName:
@@ -153,10 +212,11 @@ def individualQuery(lastName, firstName):
 					getCandidate = store.find(Names, Names.nameID == getCommittee[0].candidateNameID)
 					getCommitteeName = store.find(Names, Names.nameID == getCommittee[0].nameID)
 					record = [transaction.unixTransactionDate, getCommitteeName[0].entityTypeName, getCommitteeName[0].lastName, getCandidate[0].firstName, getCandidate[0].lastName, getCommittee[0].partyName, getCommittee[0].officeName, transaction.amount, transaction.incomeExpenseNeutral, transaction.memo, transaction.categoryName, line.entityTypeName, line.firstName, line.lastName, line.middleName, line.suffix, line.address1 + " " + line.address2, line.city, line.state, line.zipcode, line.occupation, line.employer]
-					report.append(record)
+					report['transactions'].append(record)
 	else:
-		report.append(["Individual not found"])
-	return report
+		report['transactions'].append(["Individual not found"])
+	request.append(report)
+	return request
 
 
 
