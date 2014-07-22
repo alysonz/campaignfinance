@@ -181,18 +181,31 @@ def queryByCommittee(committee):
 
 
 #getData
-def committeeQuery(committeeID):
+def committeeQuery(committeeID, cycle, download):
 	request = []
 	for committee in committeeID:
 		committee = int(committee)
-		getCommittee = store.find(Committees, Committees.committeeID == committee)
-		getCandidate = store.find(Names, Names.nameID == getCommittee[0].candidateNameID)
-		getCommitteeName = store.find(Names, Names.nameID == getCommittee[0].nameID)
-		getTransactions = store.find(Transactions, Transactions.committeeID == getCommittee[0].committeeID)
-		report = {'committeeID': getCommittee[0].committeeID, 'committeeName': getCommitteeName[0].lastName, 'transactions': []}
+		getCommittee = store.find((Committees.committeeID, Committees.nameID, Committees.candidateNameID, Committees.partyName, Committees.officeName), Committees.committeeID == committee)
+		getCandidate = store.find((Names.firstName, Names.lastName), Names.nameID == getCommittee[0][2])
+		getCommitteeName = store.find((Names.entityTypeName, Names.lastName), Names.nameID == getCommittee[0][1])
+		if (download=='True'):
+			if cycle != 'All':
+				cycleRange = store.find((Cycles.unixCycleBeginDate, Cycles.unixCycleEndDate), Cycles.cycleName == int(cycle))
+				getTransactions = store.find((Transactions.unixTransactionDate, Transactions.amount, Transactions.incomeExpenseNeutral, Transactions.memo, Transactions.categoryName, Transactions.nameID), And(Transactions.committeeID == getCommittee[0][0], Transactions.unixTransactionDate >= cycleRange[0][0], Transactions.unixTransactionDate <= cycleRange[0][1]))
+			else:
+				getTransactions = store.find((Transactions.unixTransactionDate, Transactions.amount, Transactions.incomeExpenseNeutral, Transactions.memo, Transactions.categoryName, Transactions.nameID), Transactions.committeeID == getCommittee[0][0])
+		else:
+			if cycle != 'All':
+				cycleRange = store.find((Cycles.unixCycleBeginDate, Cycles.unixCycleEndDate), Cycles.cycleName == int(cycle))
+				getTransactions = store.find(Transactions, And(Transactions.committeeID == getCommittee[0][0], Transactions.unixTransactionDate >= cycleRange[0][0], Transactions.unixTransactionDate <= cycleRange[0][1]))
+				getTransactions = [(transaction.unixTransactionDate, transaction.amount, transaction.incomeExpenseNeutral, transaction.memo, transaction.categoryName, transaction.nameID) for transaction in getTransactions.order_by(Transactions.unixTransactionDate)[:100]]
+			else:
+				getTransactions = store.find(Transactions, Transactions.committeeID == getCommittee[0][0])
+				getTransactions = [(transaction.unixTransactionDate, transaction.amount, transaction.incomeExpenseNeutral, transaction.memo, transaction.categoryName, transaction.nameID) for transaction in getTransactions.order_by(Transactions.unixTransactionDate)[:100]]
+		report = {'committeeID': getCommittee[0][0], 'committeeName': getCommitteeName[0][1], 'transactions': []}
 		for transaction in getTransactions:
-			getContributor = store.find(Names, Names.nameID == transaction.nameID)
-			record = [transaction.unixTransactionDate, getCommitteeName[0].entityTypeName, getCommitteeName[0].lastName, getCandidate[0].firstName, getCandidate[0].lastName, getCommittee[0].partyName, getCommittee[0].officeName, transaction.amount, transaction.incomeExpenseNeutral, transaction.memo, transaction.categoryName, getContributor[0].entityTypeName, getContributor[0].firstName, getContributor[0].lastName, getContributor[0].middleName, getContributor[0].suffix, getContributor[0].address1 + " " + getContributor[0].address2, getContributor[0].city, getContributor[0].state, getContributor[0].zipcode, getContributor[0].occupation, getContributor[0].employer]
+			getContributor = store.find((Names.entityTypeName, Names.firstName, Names.lastName, Names.middleName, Names.suffix, Names.address1, Names.address2, Names.city, Names.state, Names.zipcode, Names.occupation, Names.employer), Names.nameID == transaction[5])
+			record = [transaction[0], getCommitteeName[0][0], getCommitteeName[0][1], getCandidate[0][0], getCandidate[0][1], getCommittee[0][3], getCommittee[0][4], transaction[1], transaction[2], transaction[3], transaction[4], getContributor[0][0], getContributor[0][1], getContributor[0][2], getContributor[0][3], getContributor[0][4], getContributor[0][5] + " " + getContributor[0][6], getContributor[0][7], getContributor[0][8], getContributor[0][9], getContributor[0][10], getContributor[0][11]]
 			report['transactions'].append(record)
 		request.append(report)
 	return request
@@ -222,12 +235,13 @@ def individualQuery(lastName, firstName):
 
 #Filters
 def convertDate(report):
-	try:
-		for line in report:
-			line[0] = datetime.fromtimestamp(line[0]).strftime('%m-%d-%Y')
-		report.insert(0, headers)
-	except (TypeError):
-		pass
+	for item in report:
+		try:
+			for line in item['transactions']:
+				line[0] = datetime.fromtimestamp(line[0]).strftime('%m-%d-%Y')
+			item['transactions'].insert(0, headers)
+		except (TypeError):
+			pass
 	return report
 
 
@@ -236,19 +250,19 @@ def cycle(cycle, report):
 	cycle = int(cycle)
 	reportFiltered = []
 	cycleRange = store.find(Cycles, Cycles.cycleName == cycle)
-	for line in report:
-		if line[0] >= cycleRange[0].unixCycleBeginDate and line[0] <= cycleRange[0].unixCycleEndDate:
-			reportFiltered.append(line)
-	if len(reportFiltered) < 1:
-		return reportFiltered
-	else:
-		reportFiltered = [["No records exist for cycle provided."]]
-		return reportFiltered
+	for item in report:
+		for line in item['transactions']:
+			if line[0] >= cycleRange[0].unixCycleBeginDate and line[0] <= cycleRange[0].unixCycleEndDate:
+				reportFiltered.append(line)
+		if len(reportFiltered) > 0:
+			item['transactions'] = reportFiltered
+		else:
+			item['transactions'] = [["No records exist for cycle provided."]]
+	return report
 
 
 
 def date(date, dateType, report):
-	reportFiltered = []
 	if date:
 		date = date.split("/")
 		if len(date[2]) != 4:
@@ -256,27 +270,33 @@ def date(date, dateType, report):
 		try:
 			unixDate = datetime(int(date[2]),int(date[0]),int(date[1]),0,0)
 			unixDate = calendar.timegm(unixDate.utctimetuple())
-			for line in report:
-				if (dateType == "begin") and (line[0] >= unixDate):
-						reportFiltered.append(line)
-				elif dateType == "end" and (line[0] <= unixDate):
-						reportFiltered.append(line)
+			for item in report:
+				for line in item['transactions']:
+					if (dateType == "begin") and (line[0] >= unixDate):
+							reportFiltered.append(line)
+					elif dateType == "end" and (line[0] <= unixDate):
+							reportFiltered.append(line)
 		except (IndexError):
-			reportFiltered = [["Invalid date format."]]
+			for item in report:
+				reportFiltered = [["Invalid date format."]]
 	if len(reportFiltered) < 1:
 		reportFiltered = [["No records exist for date range provided."]]
-	return reportFiltered
+	for item in report:
+		item['transactions'] = reportFiltered
+	return report
 
 
 
 def incomeExpense(transactionType, report):
 	reportFiltered = []
-	for line in report:
-		if line[8] == transactionType:
-			reportFiltered.append(line)
-	if len(reportFiltered) < 1:
-		reportFiltered = [["No %s transactions exist."%(transactionType)]]
-	return reportFiltered
+	for item in report:
+		for line in item['transactions']:
+			if line[8] == int(transactionType):
+				reportFiltered.append(line)
+		if len(reportFiltered) < 1:
+			reportFiltered = [["No %s transactions exist."%(transactionType)]]
+		item['transactions'] = reportFiltered
+	return report
 
 
 

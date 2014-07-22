@@ -41,44 +41,35 @@ cycleName = form.getvalue('cycleName' ,False)
 if cycleName:
 	cycleName = cgi.escape(cycleName)
 
-transactionType = form.getvalue('transactionType' ,False)
-if transactionType:
-	transactionType = cgi.escape(transactionType)
-
-startDate = form.getvalue('startDate' ,False)
-if startDate:
-	startDate = cgi.escape(startDate)
-
-endDate = form.getvalue('endDate' ,False)
-if endDate:
-	endDate = cgi.escape(endDate)
 
 #get report
 if committeeID:
-	report = committeeQuery(committeeID)
+	report = committeeQuery(committeeID, cycleName, download)
 else:
 	report = individualQuery(entityOneLastName, entityOneFirstName)
-"""
+	if cycleName != "All":
+		report = cycle(cycleName, report)
 #filter
-if cycleName != "All":
-	report = cycle(cycleName, report)
-if transactionType != "All":
-	report = incomeExpense(transactionType, report)
-if startDate:
-	report = date(startDate, "begin", report)
-if endDate:
-	report = date(endDate, "end", report)
+#if cycleName != "All":
+#	report = cycle(cycleName, report)
 
 #finalize
 report = convertDate(report)
-"""
-
 
 #begin web content
-print 'Content-Type: application/json\n\n'
-print
-#print contents of report
-print json.dumps(report);
-if entityOneType == "blank":
-	if len(report) > 0:
-		print json.dumps(report)
+if (download):
+	download = "data.csv"
+	print "content-type:text/csv"
+	print "Content-disposition: attachment;filename=%s"%(download)
+	print
+	#print contents of report
+	for line in report[0]['transactions']:
+		line = [str(x) for x in line]
+		line = "|".join(line)
+		line = line.rstrip()
+		print line
+else:
+	print 'Content-Type: application/json\n\n'
+	print
+	#print contents of report
+	print json.dumps(report)

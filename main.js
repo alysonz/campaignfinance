@@ -59,7 +59,7 @@ $(document).ready(function() {
 		event.preventDefault();
 		var working = $('#dataSearch').find('#working')
 		var currentType = $('.entityVal').val()
-		var formData = 'entityOneType='+currentType+'&'+$(this).serialize()+'&download='
+		var formData = 'entityOneType='+currentType+'&'+$(this).serialize()
 		console.log(formData);
 		$.ajax('cfCGI.cgi', {
 		type: 'POST',
@@ -82,6 +82,8 @@ $(document).ready(function() {
 					tabs.append( "<div id='" + id + "'></div>" );
 					tabs.tabs( "refresh" );
 				}
+			$('#'+id).append('<h3>'+committee['committeeName']+'</h3>')
+			$('#'+id).append('<p><a href="http://wildfire.codercollective.org/testcampaignfinance/cfCGI.cgi?'+formData+'&download=True">'+'Download Data</a></p>')
 			//generate table
 			d3.select('#'+id)
 			.append('table')
